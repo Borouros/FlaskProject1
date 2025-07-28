@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head><title>Edit Post</title></head>
+<body>
+  <h1>Edit Your Post</h1>
+  <form method="POST">
+    <label>Title:</label><br>
+      <label>
+          <input type="text" name="title" value="{{ post.title }}">
+      </label><br><br>
+
+    <label>Content:</label><br>
+      <label>
+          <textarea name="content" rows="5" cols="60">{{ post.content }}</textarea>
+      </label><br><br>
+
+    <button type="submit">Save Changes</button>
+  </form>
+  <a href="{{ '/admin' if current_user.role == 'admin' else '/editor' }}">← Back</a>
+</body>
+</html>

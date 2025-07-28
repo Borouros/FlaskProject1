@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Education in Portugal</title>
+  <meta charset="UTF-8">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: "Merriweather", "Open Sans", sans-serif;
+      background-color: #ffffff;
+      padding-top: 30px;
+    }
+    .logo {
+      max-height: 100px;
+    }
+    .card {
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      background-color: #8B0016;
+      color: white;
+      font-weight: bold;
+    }
+    .custom-link {
+      color: #8B0016;
+      text-decoration: none;
+    }
+    .custom-link:hover {
+      text-decoration: underline;
+    }
+    footer {
+      background-color: #343a40;
+      color: white;
+      padding: 20px 0;
+    }
+    footer a {
+      color: #ffc107;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="container mb-4">
+    <div class="d-flex align-items-center justify-content-between border-bottom pb-2">
+      <img src="{{ url_for('static', filename='img/Education-in-Portugal_Logotype.jpg') }}" alt="Site Logo" class="logo">
+      <h1 class="fs-3 text-end text-danger">
+        <a href="https://www.theportugalnews.com/" class="custom-link">The Portugal News</a>
+      </h1>
+    </div>
+  </header>
+
+  <main class="container">
+<div class="container mt-4">
+
+  <div class="card mb-5">
+    <div class="card-header text-white" style="background-color: #8B0016;">
+      <h4 class="mb-0">Latest Announcements</h4>
+    </div>
+    <div class="card-body">
+      {% for item in news %}
+        <h5>{{ item.title }}</h5>
+        <p>{{ item.content }}</p>
+        <hr>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card mb-5">
+    <div class="card-header text-white" style="background-color: #8B0016;">
+      <h4 class="mb-0">Published Posts</h4>
+    </div>
+    <div class="card-body">
+      {% if posts %}
+        {% for post in posts %}
+          <div class="border rounded p-3 mb-3">
+            <h5>{{ post.title }}</h5>
+            <p>{{ post.content }}</p>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No posts available yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card mb-4">
+          <div class="card-header">Contact Info</div>
+          <div class="card-body">
+            <p><strong>Email:</strong> info@theportugalnews.com</p>
+            <p><strong>Phone:</strong> +351 282 341 100<br>
+              <small class="text-muted">(Chamada para a rede fixa nacional)</small>
+            </p>
+            <p><strong>Address:</strong><br>
+              <a target="_blank" href="https://maps.app.goo.gl/jAnYLyCZJqPAQnie7">
+                Municipio de S Domingos<br>
+                Urb. Lagoa Sol, Lote 3 r/c<br>
+                8400-357 Lagoa, Portugal
+              </a>
+            </p>
+            <p><strong>Hours:</strong> 9:30am–5:00pm (Mon – Fri)</p>
+            <p><strong>Closed for lunch:</strong> 1:00pm–2:00pm</p>
+
+
+            <hr>
+            <div class="d-flex gap-3">
+              <a href="https://facebook.com/PortugalNews" target="_blank">
+                <img src="{{ url_for('static', filename='img/share-facebook.svg') }}" width="24" alt="Facebook">
+              </a>
+              <a href="https://twitter.com/theportugalnews" target="_blank">
+                <img src="{{ url_for('static', filename='img/share-x.svg') }}" width="24" alt="X">
+              </a>
+              <a href="https://linkedin.com/company/the-portugal-news" target="_blank">
+                <img src="{{ url_for('static', filename='img/share-linkedin.svg') }}" width="24" alt="LinkedIn">
+              </a>
+              <a href="https://instagram.com/theportugalnews/" target="_blank">
+                <img src="{{ url_for('static', filename='img/share-instagram.svg') }}" width="24" alt="Instagram">
+              </a>
+              <a href="https://www.youtube.com/channel/UCeavuFSGsASAb3tJtqeDxRg" target="_blank">
+                <img src="{{ url_for('static', filename='img/share-youtube.svg') }}" width="24" alt="YouTube">
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card mb-4">
+          <div class="card-header">Email Us</div>
+          <div class="card-body">
+            <form method="POST" action="/" id="contactForm">
+                <div class="mb-3">
+                    <label for="userName"></label><input type="text" name="userName" id="userName" class="form-control" placeholder="Name*" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="userEmail"></label><input type="email" name="userEmail" id="userEmail" class="form-control" placeholder="Email*" required>
+                    <span id="message" class="form-text text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="userPhone"></label><input type="tel" inputmode="numeric" name="userPhone" id="userPhone" class="form-control" placeholder="Phone Number">
+                    <span id="phoneError" class="form-text text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="userMessage"></label><input type="text" name="userMessage" id="userMessage" class="form-control" placeholder="Message*" required>
+                </div>
+
+                <button type="submit" id="saveBtn" class="btn btn-danger">Submit</button>
+                <button type="button" id="clearStorageBtn" class="btn btn-secondary ms-2" style="display:none;">Clear</button>
+
+                </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="mt-5 text-center">
+    <div class="container">
+      <p>&copy; 2025 The Portugal News. All rights reserved.</p>
+      <p>
+        <a href="https://www.theportugalnews.com/terms-and-conditions">Terms and Conditions</a> |
+        <a href="https://www.theportugalnews.com/cookie-policy">Cookie Policy</a>
+      </p>
+    </div>
+  </footer>
+<script src="{{ url_for('static', filename='storage.js') }}"></script>
+
+</body>
+</html>
