@@ -63,12 +63,18 @@
       <h4 class="mb-0">Latest Announcements</h4>
     </div>
     <div class="card-body">
-      {% for item in news %}
+  {% if news %}
+    {% for item in news %}
+      <div class="border rounded p-3 mb-3">
         <h5>{{ item.title }}</h5>
         <p>{{ item.content }}</p>
-        <hr>
-      {% endfor %}
-    </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">No announcements available yet.</p>
+  {% endif %}
+</div>
+
   </div>
 
   <div class="card mb-5">
