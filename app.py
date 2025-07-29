@@ -202,7 +202,8 @@ def editor():
         else:
             flash("Title and content are required.")
     posts = Post.query.filter_by(author_id=current_user.id).order_by(Post.id.desc()).all()
-    return render_template('editor.html', posts=posts)
+    news_items = News.query.all()
+    return render_template('editor.html', posts=posts, news=news_items)
 
 @app.route('/edit_post/<int:post_id>', methods=['GET', 'POST'])
 @login_required
