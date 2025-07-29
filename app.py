@@ -72,28 +72,22 @@ def serve_devtools_json():
         return send_file(file_path, mimetype='application/json')
     return "Devtools config not found", 404
 
-@app.route('/update_account', methods=['POST'])
-@login_required
-def update_account():
-    new_username = request.form.get('username')
-    new_password = request.form.get('password')
-
-    if not new_username or not new_password:
-        flash("Username and password cannot be empty.", "danger")
-        return redirect(url_for('editor'))
-
-    existing_user = User.query.filter_by(username=new_username).first()
-    if existing_user and existing_user.id != current_user.id:
-        flash("Username already taken.", "danger")
-        return redirect(url_for('editor'))
-
-    current_user.username = new_username
-    current_user.password = generate_password_hash(new_password)
-    db.session.commit()
-
-    flash("Account updated successfully.", "success")
-    return redirect(url_for('editor'))
-
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            if user.role == 'admin':
+                return redirect(url_for('admin'))
+            elif user.role == 'editor':
+                return redirect(url_for('editor'))
+            else:
+                return redirect(url_for('home'))
+    flash('Invalid credentials')
+    return render_template('login.html')
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
 @login_required
@@ -310,33 +304,31 @@ def setup_user():
         return "User already exists."
     
 
-@app.route('/account', methods=['GET', 'POST'])
+@app.route('/account', methods=['POST'])
 @login_required
-def account():
-    if request.method == 'POST':
-        new_username = request.form.get('user_username')
-        new_password = request.form.get('user_password')
+def update_account():
+    new_username = request.form.get('username')
+    new_password = request.form.get('password')
 
-        user = User.query.get(current_user.id)
+    if not new_username or not new_password:
+        flash("Username and password cannot be empty.", "danger")
+        return redirect(url_for('editor'))
 
-        if new_username and new_username != user.username:
-            if User.query.filter_by(username=new_username).first():
-                flash("Username already taken.", 'error')                
-            else:
-                user.username = new_username
-                flash("Username updated successfully!")
+    existing_user = User.query.filter_by(username=new_username).first()
+    if existing_user and existing_user.id != current_user.id:
+        flash("Username already taken.", "danger")
+        return redirect(url_for('editor'))
 
-        if new_password:
-            user.password = generate_password_hash(new_password)
-            flash("Password updated successfully!")
+    current_user.username = new_username
+    current_user.password = generate_password_hash(new_password)
+    db.session.commit()
 
-        db.session.commit()
-    return render_template('account.html', user=current_user)
+    flash("Account updated successfully.", "success")
+    return redirect(url_for('editor'))
+
 
     
 
 with app.app_context():
     db.create_all()
-
-
 
