@@ -1,10 +1,9 @@
-from flask import Flask, render_template, send_file, request, redirect, flash
+from flask import Flask, render_template, send_file, request, redirect, flash, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
 from flask import url_for
-
 
 app = Flask(__name__)
 app.secret_key = 'PortNewsThe'
@@ -228,47 +227,49 @@ def edit_post(post_id):
 @app.route('/add_news', methods=['GET', 'POST'])
 @login_required
 def add_news():
-    if current_user.role != 'admin':
+    if current_user.role != 'admin' or current_user.role != 'editor':
         return "Access denied", 403
+    
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
-        if title and content:
-            item = News(title=title, content=content)
-            db.session.add(item)
-            db.session.commit()
-            flash("News item added.")
-            return redirect(url_for('admin'))
-        flash("Title and content required.")
+    if title and content:
+        item = News(title=title, content=content)
+        db.session.add(item)
+        db.session.commit()
+        flash("News item added.")
+        return redirect('/admin' if current_user.role == 'admin' else '/editor')
+    flash("Title and content required.")
     return render_template('add_news.html')
+
 
 
 @app.route('/edit_news/<int:news_id>', methods=['GET', 'POST'])
 @login_required
 def edit_news(news_id):
-    if current_user.role != 'admin':
+    if current_user.role != 'admin' or current_user.role != 'editor':
         return "Access denied", 403
 
     item = News.query.get_or_404(news_id)
 
+
     if request.method == 'POST':
         title = request.form.get('title')
         content = request.form.get('content')
-        if not title or not content:
-            flash("Title and content required.")
-            return redirect(f'/edit_news/{news_id}')
-        item.title = title
-        item.content = content
-        db.session.commit()
-        flash("News item updated.")
-        return redirect('/admin')
+    if not title or not content:
+        flash("Title and content required.")
+        return redirect(f'/edit_news/{news_id}')
+    item.title = title
+    item.content = content
+    db.session.commit()
+    flash("News item updated.")
+    return redirect('/admin' if current_user.role == 'admin' else '/editor')
 
-    return render_template('edit_news.html', item=item)
 
 @app.route('/delete_news/<int:news_id>', methods=['GET', 'POST'])
 @login_required
 def delete_news(news_id):
-    if current_user.role != 'admin':
+    if current_user.role != 'admin' or current_user.role != 'editor':
         return "Access denied", 403
     item = News.query.get_or_404(news_id)
 
@@ -276,7 +277,8 @@ def delete_news(news_id):
         db.session.delete(item)
         db.session.commit()
         flash("News item deleted.")
-        return redirect(url_for('admin'))
+        return redirect('/admin' if current_user.role == 'admin' else '/editor')
+            
 
     return render_template('delete_news.html', item=item)
 
@@ -294,6 +296,35 @@ def setup_user():
             db.session.commit()
             return "User 'lukasMekk' created."
         return "User already exists."
+    
+
+@app.route('/account', methods=['GET', 'POST'])
+@login_required
+def account():
+    if request.method == 'POST':
+        new_username = request.form.get('user_username')
+        new_password = request.form.get('user_password')
+
+        user = User.query.get(current_user.id)
+
+        if new_username and new_username != user.username:
+            if User.query.filter_by(username=new_username).first():
+                flash("Username already taken.", 'error')                
+            else:
+                user.username = new_username
+                flash("Username updated successfully!")
+
+        if new_password:
+            user.password = generate_password_hash(new_password)
+            flash("Password updated successfully!")
+
+        db.session.commit()
+    return render_template('account.html', user=current_user)
+
+    
 
 with app.app_context():
     db.create_all()
+
+
+
