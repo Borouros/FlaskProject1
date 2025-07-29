@@ -32,6 +32,14 @@
       background-color: #A8001C;
       border-color: #A8001C;
     }
+    .alert-info {
+      background-color: #e7f3fe;
+      border-color: #b8daff;
+    }
+    .alert-danger {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+    }
   </style>
 </head>
 
@@ -40,7 +48,7 @@
 
   {% with messages = get_flashed_messages() %}
     {% if messages %}
-      <div class="alert alert-info" id="flash-message">
+      <div class="alert {{ 'alert-info' if not messages[0].startswith('Error') else 'alert-danger' }}" id="flash-message">
         {% for message in messages %}
           <div>{{ message }}</div>
         {% endfor %}
@@ -141,40 +149,60 @@
     </div>
   </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const container = document.getElementById("submissionContainer");
-    const keys = [];
+{% if users %}
+          <div class="card mb-4">
+            <div class="card-header">Manage Users</div>
+            <div class="card-body">
+              {% for user in users %}
+                <div class="border p-3 rounded mb-3">
+                  <strong>{{ user.username }}</strong> ({{ user.role }})
+                  <form method="POST" action="/update_role" class="mt-2">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <label>
+                      <select name="role" class="form-select w-auto d-inline-block me-2">
+                        <option value="viewer">Viewer</option>
+                        <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </label>
+                    <button type="submit" class="btn btn-primary btn-sm">Update Role</button>
+                  </form>
+{% endfor %}
 
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith("userData_")) {
-        keys.push(key);
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.getElementById("submissionContainer");
+      const keys = [];
+
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("userData_")) {
+          keys.push(key);
+        }
       }
-    }
 
-    keys.sort();
+      keys.sort();
 
-    keys.forEach(key => {
-      const data = JSON.parse(localStorage.getItem(key));
-      const div = document.createElement("div");
-      div.classList.add("border", "p-3", "rounded", "mb-3");
+      keys.forEach(key => {
+        const data = JSON.parse(localStorage.getItem(key));
+        const div = document.createElement("div");
+        div.classList.add("border", "p-3", "rounded", "mb-3");
 
-      div.innerHTML = `
-        <strong>Name:</strong> ${data.name}<br>
-        <strong>Email:</strong> ${data.email}<br>
-        <strong>Message:</strong> ${data.message}<br>
-        <button class="btn btn-sm btn-danger mt-2">Delete</button>
-      `;
+        div.innerHTML = `
+          <strong>Name:</strong> ${data.name}<br>
+          <strong>Email:</strong> ${data.email}<br>
+          <strong>Message:</strong> ${data.message}<br>
+          <button class="btn btn-sm btn-danger mt-2">Delete</button>
+        `;
 
-      const deleteBtn = div.querySelector("button");
-      deleteBtn.addEventListener("click", () => {
-        localStorage.removeItem(key);
-        div.remove();
+        const deleteBtn = div.querySelector("button");
+        deleteBtn.addEventListener("click", () => {
+          localStorage.removeItem(key);
+          div.remove();
+        });
+        container.appendChild(div);
       });
-      container.appendChild(div);
     });
-  });
-</script>
+  </script>
 </body>
 </html>
