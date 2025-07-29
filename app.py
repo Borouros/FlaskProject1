@@ -1,9 +1,8 @@
-from flask import Flask, render_template, send_file, request, redirect, flash, session
+from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 import os
-from flask import url_for
 
 app = Flask(__name__)
 app.secret_key = 'PortNewsThe'
@@ -81,8 +80,13 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect('/admin' if user.role == 'admin' else '/editor' if user.role == 'editor' else '/')
-        flash('Invalid credentials')
+            if user.role == 'admin':
+                return redirect(url_for('admin'))
+            elif user.role == 'editor':
+                return redirect(url_for('editor'))
+            else:
+                return redirect(url_for('home'))
+    flash('Invalid credentials')
     return render_template('login.html')
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
@@ -227,50 +231,52 @@ def edit_post(post_id):
 @app.route('/add_news', methods=['GET', 'POST'])
 @login_required
 def add_news():
-    if current_user.role != 'admin' or current_user.role != 'editor':
+    if current_user.role not in ['admin', 'editor']:
         return "Access denied", 403
-    
+
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
-    if title and content:
-        item = News(title=title, content=content)
-        db.session.add(item)
-        db.session.commit()
-        flash("News item added.")
-        return redirect('/admin' if current_user.role == 'admin' else '/editor')
-    flash("Title and content required.")
+        if title and content:
+            item = News(title=title, content=content)
+            db.session.add(item)
+            db.session.commit()
+            flash("News item added.")
+            return redirect('/admin' if current_user.role == 'admin' else '/editor')
+        flash("Title and content required.")
+    
     return render_template('add_news.html')
-
 
 
 @app.route('/edit_news/<int:news_id>', methods=['GET', 'POST'])
 @login_required
 def edit_news(news_id):
-    if current_user.role != 'admin' or current_user.role != 'editor':
+    if current_user.role not in ['admin', 'editor']:
         return "Access denied", 403
 
     item = News.query.get_or_404(news_id)
 
-
     if request.method == 'POST':
-        title = request.form.get('title')
-        content = request.form.get('content')
-    if not title or not content:
-        flash("Title and content required.")
-        return redirect(f'/edit_news/{news_id}')
-    item.title = title
-    item.content = content
-    db.session.commit()
-    flash("News item updated.")
-    return redirect('/admin' if current_user.role == 'admin' else '/editor')
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        if not title or not content:
+            flash("Title and content required.")
+            return redirect(f'/edit_news/{news_id}')
+        item.title = title
+        item.content = content
+        db.session.commit()
+        flash("News item updated.")
+        return redirect('/admin' if current_user.role == 'admin' else '/editor')
+
+    return render_template('edit_news.html', item=item)
 
 
 @app.route('/delete_news/<int:news_id>', methods=['GET', 'POST'])
 @login_required
 def delete_news(news_id):
-    if current_user.role != 'admin' or current_user.role != 'editor':
+    if current_user.role not in ['admin', 'editor']:
         return "Access denied", 403
+
     item = News.query.get_or_404(news_id)
 
     if request.method == 'POST':
@@ -278,9 +284,9 @@ def delete_news(news_id):
         db.session.commit()
         flash("News item deleted.")
         return redirect('/admin' if current_user.role == 'admin' else '/editor')
-            
 
     return render_template('delete_news.html', item=item)
+
 
 @app.route('/setup_user')
 def setup_user():
