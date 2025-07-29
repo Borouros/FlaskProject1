@@ -332,3 +332,5 @@ def update_account():
 with app.app_context():
     db.create_all()
 
+
+
