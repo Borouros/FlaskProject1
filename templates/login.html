@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Editor Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <style>
     body {
       font-family: "Merriweather", "Open Sans", sans-serif;
@@ -22,7 +22,7 @@
     }
     .card-header {
       background-color: #8B0016;
-      color: white;
+      color: #fff;
       font-weight: bold;
     }
     .btn-primary {
@@ -35,11 +35,10 @@
     }
   </style>
 </head>
-<body>
 
+<body class="p-4">
   <h2>Welcome, {{ current_user.username }}!</h2>
 
-  <!-- Flash messages -->
   {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
       {% for category, message in messages %}
@@ -63,39 +62,57 @@
     <div class="row">
       <div class="col-md-12">
 
+        <!-- Account Settings -->
+        <div class="card mb-4">
+          <div class="card-header">Account Settings</div>
+          <div class="card-body">
+            <form method="POST" action="{{ url_for('update_account') }}">
+              <div class="mb-3">
+                <label for="username" class="form-label">New Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="New username" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">New Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="New password" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Update Account</button>
+            </form>
+          </div>
+        </div>
+
         <!-- Add Announcement -->
-        <div class="card">
+        <div class="card mb-4">
           <div class="card-header">Add Announcement</div>
           <div class="card-body">
             <form method="POST" action="{{ url_for('add_news') }}">
               <div class="mb-3">
                 <label for="news-title" class="form-label">Title</label>
-                <input type="text" id="news-title" name="title" class="form-control" placeholder="Title" required maxlength="100">
+                <input type="text" id="news-title" name="title" class="form-control" placeholder="Title" required>
               </div>
               <div class="mb-3">
                 <label for="news-content" class="form-label">Content</label>
-                <textarea id="news-content" name="content" class="form-control" rows="4" placeholder="Write the announcement here..." required maxlength="1000"></textarea>
+                <textarea id="news-content" name="content" class="form-control" rows="4" placeholder="Content" required></textarea>
               </div>
               <button type="submit" class="btn btn-primary">Publish</button>
             </form>
           </div>
         </div>
 
-        <!-- Announcements -->
-        <div class="card">
-          <div class="card-header">Announcements</div>
+        <!-- Announcements List -->
+        <div class="card mb-4">
+          <div class="card-header">All Announcements</div>
           <div class="card-body">
             {% if news %}
               {% for item in news %}
                 <div class="border p-3 rounded mb-3">
                   <h5>{{ item.title | e }}</h5>
                   <p>{{ item.content | e }}</p>
-                  <form method="GET" action="{{ url_for('edit_news', news_id=item.id) }}" class="d-inline">
-                    <button class="btn btn-sm btn-secondary">Edit</button>
+                  <form action="{{ url_for('edit_news', news_id=item.id) }}" method="GET" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-secondary">Edit</button>
                   </form>
-                  <form method="POST" action="{{ url_for('delete_news', news_id=item.id) }}" class="d-inline"
+                  <form action="{{ url_for('delete_news', news_id=item.id) }}" method="POST" class="d-inline"
                         onsubmit="return confirm('Delete this news item?')">
-                    <button class="btn btn-sm btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                   </form>
                 </div>
               {% endfor %}
@@ -105,18 +122,18 @@
           </div>
         </div>
 
-        <!-- Create Post -->
-        <div class="card">
+        <!-- Create New Post -->
+        <div class="card mb-4">
           <div class="card-header">Create a New Post</div>
           <div class="card-body">
             <form method="POST" action="{{ url_for('editor') }}">
               <div class="mb-3">
                 <label for="post-title" class="form-label">Title</label>
-                <input type="text" id="post-title" name="title" class="form-control" placeholder="Post title" required maxlength="100">
+                <input type="text" id="post-title" name="title" class="form-control" placeholder="Title" required>
               </div>
               <div class="mb-3">
                 <label for="post-content" class="form-label">Content</label>
-                <textarea id="post-content" name="content" class="form-control" rows="4" placeholder="Write your post..." required maxlength="2000"></textarea>
+                <textarea id="post-content" name="content" class="form-control" rows="4" placeholder="Content" required></textarea>
               </div>
               <button type="submit" class="btn btn-primary">Publish</button>
             </form>
@@ -124,7 +141,7 @@
         </div>
 
         <!-- Your Posts -->
-        <div class="card">
+        <div class="card mb-4">
           <div class="card-header">Your Posts</div>
           <div class="card-body">
             {% if posts %}
@@ -132,13 +149,13 @@
                 <div class="border p-3 rounded mb-3">
                   <h5>{{ post.title | e }}</h5>
                   <p>{{ post.content | e }}</p>
-                  <small class="text-muted">Post ID: {{ post.id }}</small>
+                  <small>ID: {{ post.id }}</small>
                   <div class="mt-2">
                     <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" class="d-inline">
-                      <button class="btn btn-outline-danger btn-sm">Delete</button>
+                      <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
                     </form>
-                    <form method="GET" action="{{ url_for('edit_post', post_id=post.id) }}" class="d-inline">
-                      <button class="btn btn-outline-secondary btn-sm">Edit</button>
+                    <form action="{{ url_for('edit_post', post_id=post.id) }}" method="GET" class="d-inline">
+                      <button type="submit" class="btn btn-outline-secondary btn-sm">Edit</button>
                     </form>
                   </div>
                 </div>
@@ -149,11 +166,11 @@
           </div>
         </div>
 
-        <!-- LocalStorage Contact Form Submissions -->
-        <div class="card">
+        <!-- Optional: Contact Form Submissions via localStorage -->
+        <div class="card mb-4">
           <div class="card-header">Contact Form Submissions</div>
           <div class="card-body" id="submissionContainer">
-            <p class="text-muted">Loading client-side saved submissions...</p>
+            <p class="text-muted">Only shows client-side saved submissions.</p>
           </div>
         </div>
 
@@ -161,23 +178,26 @@
     </div>
   </div>
 
-  <!-- LocalStorage JS -->
+  <!-- JS for displaying localStorage contact submissions -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const container = document.getElementById("submissionContainer");
-      container.innerHTML = "";
+      const keys = [];
 
-      const keys = Object.keys(localStorage).filter(k => k.startsWith("userData_"));
-      if (keys.length === 0) {
-        container.innerHTML = "<p class='text-muted'>No saved contact form submissions.</p>";
-        return;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("userData_")) {
+          keys.push(key);
+        }
       }
 
       keys.sort();
+
       keys.forEach(key => {
         const data = JSON.parse(localStorage.getItem(key));
         const div = document.createElement("div");
-        div.className = "border p-3 rounded mb-3";
+        div.classList.add("border", "p-3", "rounded", "mb-3");
+
         div.innerHTML = `
           <strong>Name:</strong> ${data.name}<br>
           <strong>Email:</strong> ${data.email}<br>
@@ -194,6 +214,5 @@
       });
     });
   </script>
-
 </body>
 </html>
