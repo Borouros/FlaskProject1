@@ -72,22 +72,28 @@ def serve_devtools_json():
         return send_file(file_path, mimetype='application/json')
     return "Devtools config not found", 404
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            if user.role == 'admin':
-                return redirect(url_for('admin'))
-            elif user.role == 'editor':
-                return redirect(url_for('editor'))
-            else:
-                return redirect(url_for('home'))
-    flash('Invalid credentials')
-    return render_template('login.html')
+@app.route('/update_account', methods=['POST'])
+@login_required
+def update_account():
+    new_username = request.form.get('username')
+    new_password = request.form.get('password')
+
+    if not new_username or not new_password:
+        flash("Username and password cannot be empty.", "danger")
+        return redirect(url_for('editor'))
+
+    existing_user = User.query.filter_by(username=new_username).first()
+    if existing_user and existing_user.id != current_user.id:
+        flash("Username already taken.", "danger")
+        return redirect(url_for('editor'))
+
+    current_user.username = new_username
+    current_user.password = generate_password_hash(new_password)
+    db.session.commit()
+
+    flash("Account updated successfully.", "success")
+    return redirect(url_for('editor'))
+
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
 @login_required
