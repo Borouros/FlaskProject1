@@ -149,25 +149,6 @@
     </div>
   </div>
 
-{% if users %}
-          <div class="card mb-4">
-            <div class="card-header">Manage Users</div>
-            <div class="card-body">
-              {% for user in users %}
-                <div class="border p-3 rounded mb-3">
-                  <strong>{{ user.username }}</strong> ({{ user.role }})
-                  <form method="POST" action="/update_role" class="mt-2">
-                    <input type="hidden" name="user_id" value="{{ user.id }}">
-                    <label>
-                      <select name="role" class="form-select w-auto d-inline-block me-2">
-                        <option value="viewer">Viewer</option>
-                        <option value="editor">Editor</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </label>
-                    <button type="submit" class="btn btn-primary btn-sm">Update Role</button>
-                  </form>
-{% endfor %}
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
