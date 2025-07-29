@@ -304,28 +304,28 @@ def setup_user():
         return "User already exists."
     
 
-@app.route('/account', methods=['GET', 'POST'])
+@app.route('/account', methods=['POST'])
 @login_required
-def account():
-    if request.method == 'POST':
-        new_username = request.form.get('user_username')
-        new_password = request.form.get('user_password')
+def update_account():
+    new_username = request.form.get('username')
+    new_password = request.form.get('password')
 
-        user = User.query.get(current_user.id)
+    if not new_username or not new_password:
+        flash("Username and password cannot be empty.", "danger")
+        return redirect(url_for('editor'))
 
-        if new_username and new_username != user.username:
-            if User.query.filter_by(username=new_username).first():
-                flash("Username already taken.", 'error')                
-            else:
-                user.username = new_username
-                flash("Username updated successfully!")
+    existing_user = User.query.filter_by(username=new_username).first()
+    if existing_user and existing_user.id != current_user.id:
+        flash("Username already taken.", "danger")
+        return redirect(url_for('editor'))
 
-        if new_password:
-            user.password = generate_password_hash(new_password)
-            flash("Password updated successfully!")
+    current_user.username = new_username
+    current_user.password = generate_password_hash(new_password)
+    db.session.commit()
 
-        db.session.commit()
-    return render_template('account.html', user=current_user)
+    flash("Account updated successfully.", "success")
+    return redirect(url_for('editor'))
+
 
     
 
