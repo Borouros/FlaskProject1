@@ -1,0 +1,4 @@
+WSGIScriptAlias / /path/to/app.wsgi
+<Directory /path/to>
+    Require all granted
+</Directory>

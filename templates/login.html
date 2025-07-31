@@ -45,10 +45,20 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+          <div class="alert alert-{{ 'danger' if category == 'error' else category }}" id="flash-message">
             {{ message }}
           </div>
         {% endfor %}
+        <script>
+          setTimeout(() => {
+            const msg = document.getElementById('flash-message');
+            if (msg) {
+              msg.style.transition = 'opacity 1s';
+              msg.style.opacity = '0';
+              setTimeout(() => msg.remove(), 1000);
+            }
+          }, 3000);
+        </script>
       {% endif %}
     {% endwith %}
 
