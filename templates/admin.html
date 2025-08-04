@@ -124,8 +124,8 @@
           <div class="card-body">
             {% for post in posts %}
               <div class="border p-3 rounded mb-3">
-                <h5>{{ iten.title }}</h5>
-                <p>{{ item.content }}</p>
+                <h5>{{ post.title }}</h5>
+                <p>{{ post.content }}</p>
                 <small>ID: {{ post.id }}</small>
                 <div class="mt-2">
                   <form action="/edit_post/{{ post.id }}" method="GET" class="d-inline">
