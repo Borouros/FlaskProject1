@@ -344,3 +344,4 @@ with app.app_context():
 
 
 
+#write: flask run in terminal to run the app
