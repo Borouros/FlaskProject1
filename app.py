@@ -2,6 +2,8 @@ from flask import Flask, render_template, send_file, request, redirect, flash, s
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
+from functools import wraps
+from flask import abort
 import os
 
 app = Flask(__name__)
@@ -44,11 +46,20 @@ def home():
     news_items = News.query.all()
     return render_template('code.html', posts=posts, news=news_items)
 
+def roles_required(*roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if current_user.role not in roles:
+                return abort(403)
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 @app.route('/admin', methods=['GET', 'POST'])
 @login_required
+@roles_required('admin', 'editor')
 def admin():
-    if current_user.role not in ['admin', 'editor']:
-        return "Access denied", 403
     if request.method == 'POST':
         title = request.form.get('title')
         content = request.form.get('content')
@@ -230,25 +241,21 @@ def edit_post(post_id):
 
     return render_template('edit_post.html', post=post)
 
-@app.route('/add_news', methods=['GET', 'POST'])
+@app.route('/add_news', methods=['POST'])
 @login_required
 def add_news():
     if current_user.role not in ['admin', 'editor']:
         return "Access denied", 403
-
-    if request.method == 'POST':
-        title = request.form.get('title', '').strip()
-        content = request.form.get('content', '').strip()
-        if title and content:
-            item = News(title=title, content=content)
-            db.session.add(item)
-            db.session.commit()
-            flash("News item added.")
-            return redirect('/admin' if current_user.role == 'admin' else '/editor')
+    title = request.form.get('title')
+    content = request.form.get('content')
+    if title and content:
+        news = News(title=title, content=content)
+        db.session.add(news)
+        db.session.commit()
+        flash("Announcement added.")
+    else:
         flash("Title and content required.")
-    
-    return render_template('add_news.html')
-
+    return redirect('/admin')
 
 @app.route('/edit_news/<int:news_id>', methods=['GET', 'POST'])
 @login_required
@@ -336,3 +343,6 @@ with app.app_context():
 
 
 
+
+
+#write: 'flask run' in terminal to run the app
