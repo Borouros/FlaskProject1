@@ -1,5 +1,5 @@
 from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for
-from flask_login import LoginManager, UserMixin, login_user, login_required, current_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
@@ -364,6 +364,11 @@ def translate_post(post_id):
         flash(f"Translation failed: {str(e)}", "error")
         return redirect(url_for('home'))
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
     
 
