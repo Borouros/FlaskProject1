@@ -97,7 +97,8 @@ def login():
                 return redirect(url_for('editor'))
             else:
                 return redirect(url_for('home'))
-    flash('Invalid credentials')
+        flash('Invalid credentials', 'error')
+        return render_template('login.html')
     return render_template('login.html')
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
