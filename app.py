@@ -5,6 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
 from flask import abort
 import os
+from translator import translate
 
 app = Flask(__name__)
 app.secret_key = 'PortNewsThe'
@@ -27,12 +28,17 @@ class Post(db.Model):
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    language = db.Column(db.String(10), nullable=False, default='en')
+    original_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
 class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.Text, nullable=False)
-
+    summary = db.Column(db.Text, nullable=False)
+    language = db.Column(db.String(10), nullable=False, default='en')
+    original_id = db.Column(db.Integer, db.ForeignKey('news.id'))
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -334,6 +340,29 @@ def update_account():
 
     flash("Account updated successfully.", "success")
     return redirect(url_for('editor'))
+
+@app.route('/translate_post/<int:post_id>')
+def translate_post(post_id):
+    from translator import translate
+    
+    post = Post.query.get_or_404(post_id)
+
+    target_language = request.args.get('target', 'pt')
+    source_language = request.args.get('source', 'en')
+    
+    try:
+        translated_title = translate(post.title, source=source_language, target=target_language)
+        translated_content = translate(post.content, source=source_language, target=target_language)
+        
+        return render_template('translated_post.html', 
+                             original_post=post,
+                             translated_title=translated_title,
+                             translated_content=translated_content,
+                             target_language=target_language,
+                             source_language=source_language)
+    except Exception as e:
+        flash(f"Translation failed: {str(e)}", "error")
+        return redirect(url_for('home'))
 
 
     
