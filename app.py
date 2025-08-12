@@ -389,6 +389,53 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
+
+@app.route('/translate', methods=['POST'])
+@login_required
+def translate_text():
+    """Handle AJAX translation requests"""
+    text = request.json.get('text', '')
+    source = request.json.get('source', 'en')
+    target = request.json.get('target', 'pt')
+    
+    if not text:
+        return {'error': 'No text provided'}, 400
+    
+    try:
+        translated = translate(text, source, target)
+        return {'translatedText': translated}
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+@app.route('/translate_content/<content_type>/<int:content_id>')
+@login_required
+@roles_required('admin', 'editor')
+def translate_content(content_type, content_id):
+    """Translate post or news content"""
+    target_lang = request.args.get('target', 'pt')
+    
+    if content_type == 'post':
+        content = Post.query.get_or_404(content_id)
+        if current_user.role != 'admin' and content.author_id != current_user.id:
+            return "Access denied", 403
+    elif content_type == 'news':
+        content = News.query.get_or_404(content_id)
+    else:
+        return "Invalid content type", 400
+    
+    try:
+        translated_title = translate(content.title, 'en', target_lang)
+        translated_content = translate(content.content, 'en', target_lang)
+        
+        return {
+            'original_title': content.title,
+            'translated_title': translated_title,
+            'original_content': content.content,
+            'translated_content': translated_content
+        }
+    except Exception as e:
+        return {'error': str(e)}, 500
+
     
 
 with app.app_context():
