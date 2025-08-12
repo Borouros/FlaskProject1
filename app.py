@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for
+from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, get_flashed_messages
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -23,48 +23,52 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(50), nullable=False, default='viewer')
 
+class News(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    language = db.Column(db.String(5), default='en')
+    title_en = db.Column(db.String(150))
+    title_pt = db.Column(db.String(150))
+    content_en = db.Column(db.Text)
+    content_pt = db.Column(db.Text)
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     content = db.Column(db.Text, nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    language = db.Column(db.String(10), nullable=False, default='en')
-    original_id = db.Column(db.Integer, db.ForeignKey('post.id'))
-
-class News(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(150), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    summary = db.Column(db.Text, nullable=False)
-    language = db.Column(db.String(10), nullable=False, default='en')
-    original_id = db.Column(db.Integer, db.ForeignKey('news.id'))
-    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    language = db.Column(db.String(5), default='en')
+    title_en = db.Column(db.String(150))
+    title_pt = db.Column(db.String(150))
+    content_en = db.Column(db.Text)
+    content_pt = db.Column(db.Text)
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.route('/set_language/<language>')
+def set_language(language):
+    if language in ['en', 'pt']:
+        session['language'] = language
+    return redirect(request.referrer or '/')
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
         return redirect('/')
+    
+    user_language = session.get('language', 'en')
     posts = Post.query.all()
     news_items = News.query.all()
-    return render_template('code.html', posts=posts, news=news_items)
-
-def roles_required(*roles):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if current_user.role not in roles:
-                return abort(403)
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
+    
+    return render_template('code.html', posts=posts, news=news_items, 
+                         user_language=user_language)
 
 @app.route('/admin', methods=['GET', 'POST'])
+
 @login_required
-@roles_required('admin', 'editor')
 def admin():
     if request.method == 'POST':
         title = request.form.get('title')
@@ -252,13 +256,28 @@ def edit_post(post_id):
 def add_news():
     if current_user.role not in ['admin', 'editor']:
         return "Access denied", 403
+    
     title = request.form.get('title')
     content = request.form.get('content')
+    language = request.form.get('language', 'en')  # Default to English
+    
     if title and content:
-        news = News(title=title, content=content)
+        news = News(title=title, content=content, language=language)
+        
+        if language == 'en':
+            news.title_en = title
+            news.content_en = content
+            news.title_pt = translate(title, 'en', 'pt')
+            news.content_pt = translate(content, 'en', 'pt')
+        else:
+            news.title_pt = title
+            news.content_pt = content
+            news.title_en = translate(title, 'pt', 'en')
+            news.content_en = translate(content, 'pt', 'en')
+        
         db.session.add(news)
         db.session.commit()
-        flash("Announcement added.")
+        flash("Announcement added with translations.")
     else:
         flash("Title and content required.")
     return redirect('/admin')
@@ -376,7 +395,11 @@ with app.app_context():
     db.create_all()
 
 
+from flask_migrate import Migrate
+migrate = Migrate(app, db)
 
+
+app.debug = True
 
 
 #write: 'flask run' in terminal to run the app

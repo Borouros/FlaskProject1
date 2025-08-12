@@ -46,6 +46,13 @@
           <label for="content" class="form-label">Content</label>
           <textarea name="content" id="content" class="form-control" rows="5" placeholder="Write your message here..." required></textarea>
         </div>
+        <div class="mb-3">
+          <label for="language" class="form-label">Original Language</label>
+          <select name="language" id="language" class="form-select">
+            <option value="en">English</option>
+            <option value="pt">Português</option>
+          </select>
+        </div>
         <button type="submit" class="btn btn-primary">Publish</button>
         <a href="{{ url_for('admin') }}" class="btn btn-secondary ms-2">Cancel</a>
       </form>

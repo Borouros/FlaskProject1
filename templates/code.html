@@ -66,10 +66,33 @@
   {% if news %}
     {% for item in news %}
       <div class="border rounded p-3 mb-3">
-        <h5>{{ item.title }}</h5>
-        <p>{{ item.content }}</p>
-      </div>
-    {% endfor %}
+      <h5>
+        {% if user_language == 'pt' and item.title_pt %}
+          {{ item.title_pt }}
+        {% else %}
+         {{ item.title_en or item.title }}
+        {% endif %}
+      </h5>
+      <p>
+        {% if user_language == 'pt' and item.content_pt %}
+          {{ item.content_pt }}
+        {% else %}
+          {{ item.content_en or item.content }}
+        {% endif %}
+     </p>
+    </div>
+  {% endfor %}
+
+  <div class="language-selector mb-3">
+   <a href="{{ url_for('set_language', language='en') }}" 
+       class="btn btn-sm {{ 'btn-primary' if user_language == 'en' else 'btn-outline-primary' }}">
+      English
+    </a>
+    <a href="{{ url_for('set_language', language='pt') }}" 
+       class="btn btn-sm {{ 'btn-primary' if user_language == 'pt' else 'btn-outline-primary' }}">
+      Português
+    </a>
+  </div>
   {% else %}
     <p class="text-muted">No announcements available yet.</p>
   {% endif %}
