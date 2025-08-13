@@ -1,9 +1,9 @@
-from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, get_flashed_messages
+from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, get_flashed_messages, abort
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
-from flask import abort
 import os
 from translator import translate
 
@@ -442,7 +442,6 @@ with app.app_context():
     db.create_all()
 
 
-from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
 
