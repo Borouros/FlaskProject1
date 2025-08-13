@@ -409,7 +409,7 @@ def translate_text():
 
 @app.route('/translate_content/<content_type>/<int:content_id>')
 @login_required
-@roles_required('admin', 'editor')
+@login_required('admin', 'editor')
 def translate_content(content_type, content_id):
     """Translate post or news content"""
     target_lang = request.args.get('target', 'pt')
