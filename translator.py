@@ -8,11 +8,11 @@ def translate(text, source='en', target='pt'):
         'target': target,
         'format': 'text'
     }
+
     try:
         response = requests.post(url, data=payload)
-        response.raise_for_status() 
-        
-        if response.headers.get('content-type', '').startswith('application/json'):
+        response.raise_for_status()
+        if response.headers.get('Content-Type', '').startswith('application/json'):
             json_data = response.json()
             if 'translatedText' in json_data:
                 return json_data['translatedText']
@@ -20,7 +20,6 @@ def translate(text, source='en', target='pt'):
                 return f"Translation error: {json_data.get('error', 'Unknown error')}"
         else:
             return f"API returned non-JSON response: {response.text[:100]}"
-            
     except requests.RequestException as e:
         return f"Network error: {str(e)}"
     except ValueError as e:
