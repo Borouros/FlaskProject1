@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, get_flashed_messages, abort
+from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, get_flashed_messages, abort, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -435,6 +435,9 @@ def translate_content(content_type, content_id):
     except Exception as e:
         return {'error': str(e)}, 500
 
+@app.route('/api/data')
+def get_data():
+    return jsonify({'key': 'value'})
     
 
 with app.app_context():
