@@ -1,38 +1,15 @@
-import requests
+from transformers import pipeline
 
-def translate(text, source='en', target='pt'):
-    url = "https://translate.argosopentech.com/translate"
-    payload = {
-        "q": text,
-        "source": source,
-        "target": target,
-        "format": "text"
-    }
+translator_hf = pipeline("translation_en_to_pt")
 
-
-    headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
-
+def translate(text: str) -> str:
+    """
+    Translate English to Portuguese using an offline HF pipeline.
+    Falls back to returning the original text on any error.
+    """
     try:
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
-
-        print("→ Requested URL:", response.request.url)
-        print("→ Request headers:", response.request.headers)
-        print("→ Request body:", response.request.body)
-        print("← Status code:", response.status_code)
-        print("← Response headers:", response.headers)
-        print("← First 200 chars of body:", response.text[:200])
-        print("Redirect history:", response.history)
-
-        response.raise_for_status()
-        json_data = response.json()
-        return json_data.get('translatedText', 'Translation error: No translatedText found')
-
-    except requests.RequestException as e:
-        return f"Network error: {e}"
-    except ValueError as e:
-        return f"JSON decode error: {e}"
+        result = translator_hf(text)
+        return result[0].get("translation_text", text)
     except Exception as e:
-        return f"Unexpected error: {e}"
+        print("Translation error:", e)
+        return text

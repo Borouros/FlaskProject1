@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, get_flashed_messages, abort, jsonify
+from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, get_flashed_messages, abort, jsonify, get_post_by_id
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -7,6 +7,11 @@ from functools import wraps
 import os
 from translator import translate
 import response
+from database_module import DatabaseClient
+import sqlite3
+
+conn = sqlite3.connect("yourdatabase.db")
+cursor = conn.cursor()
 
 app = Flask(__name__)
 app.secret_key = 'PortNewsThe'
@@ -394,7 +399,6 @@ def logout():
 @app.route('/translate', methods=['POST'])
 @login_required
 def translate_text():
-    """Handle AJAX translation requests"""
     text = request.json.get('text', '')
     source = request.json.get('source', 'en')
     target = request.json.get('target', 'pt')
@@ -410,7 +414,6 @@ def translate_text():
 
 @app.route('/translate_content/<content_type>/<int:content_id>')
 def translate_content(content_type, content_id):
-    """Translate post or news content"""
     target_lang = request.args.get('target', 'pt')
     
     if content_type == 'post':
@@ -438,6 +441,20 @@ def translate_content(content_type, content_id):
 @app.route('/api/data')
 def get_data():
     return jsonify({'key': 'value'})
+
+@app.route("/translate_post/<int:post_id>")
+def translate_post(post_id):
+    post = get_post_by_id(post_id)
+    if post is None:
+        abort(404, "Post not found")
+
+    translated_text = translate(post.content)
+
+    return render_template(
+        "translate_post.html",
+        original=post.content,
+        translated=translated_text
+    )
     
 
 with app.app_context():
