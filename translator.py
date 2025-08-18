@@ -1,14 +1,14 @@
 import requests
 
 def translate(text, source='en', target='pt'):
-    url = "https://libretranslate.com/translate"
-
+    url = "https://translate.argosopentech.com/translate"
     payload = {
-        'q': text,
-        'source': source,
-        'target': target,
-        'format': 'text'
+        "q": text,
+        "source": source,
+        "target": target,
+        "format": "text"
     }
+
 
     headers = {
         "Content-Type": "application/json",
