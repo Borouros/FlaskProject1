@@ -434,23 +434,6 @@ def translate_content(content_type, content_id):
         }
     except Exception as e:
         return {'error': str(e)}, 500
-    
-@app.route('/translate_text', methods=['POST'])
-@login_required
-def translate_text():
-    text = request.json.get('text', '')
-    source = request.json.get('source', 'en')
-    target = request.json.get('target', 'pt')
-
-    if not text:
-        return {'error': 'No text provided'}, 400
-
-    try:
-        translated = translate(text, source, target)
-        return response.json(translated)
-    except Exception as e:
-        return {'error': str(e)}, 500
-
 
     
 
