@@ -1,7 +1,6 @@
 from deep_translator import GoogleTranslator
 
-
-translator = GoogleTranslator(source="en", target="pt")
+translator = GoogleTranslator(source_lang="en", target_lang="pt")
 
 def translate(text: str) -> str:
     """
@@ -15,3 +14,4 @@ def translate(text: str) -> str:
     except Exception as e:
         print(f"Translation error: {e}")
         return text
+
