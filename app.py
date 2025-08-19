@@ -5,6 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask_migrate import Migrate
 import os
 from translator import translate
+from deep_translator import GoogleTranslator
 
 
 app = Flask(__name__)
