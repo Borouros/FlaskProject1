@@ -46,12 +46,17 @@
 <script>
 let map;
 let geoLayer;
-
-// Europe bounds: [southWestLat, southWestLng], [northEastLat, northEastLng]
 const europeBounds = [[34, -25], [72, 45]]; 
 
+// LocalStorage helpers
+function getStoredNames() {
+  return JSON.parse(localStorage.getItem('renamedCountries') || '{}');
+}
+function saveStoredNames(names) {
+  localStorage.setItem('renamedCountries', JSON.stringify(names));
+}
+
 function initMap() {
-  // Center map on Europe
   map = L.map('map', {
     center: [54, 15],
     zoom: 4,
@@ -62,15 +67,7 @@ function initMap() {
   });
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
   loadCountries();
-}
-
-function getStoredNames() {
-  return JSON.parse(localStorage.getItem('renamedCountries') || '{}');
-}
-function saveStoredNames(names) {
-  localStorage.setItem('renamedCountries', JSON.stringify(names));
 }
 
 function loadCountries() {
@@ -91,14 +88,14 @@ function loadCountries() {
           const country = feature.properties.name;
           const displayName = storedNames[country] || country;
 
-          // Show name permanently
+          // Add permanent tooltip for name
           layer.bindTooltip(displayName, {
             permanent: true,
             direction: "center",
             className: "country-label"
           }).openTooltip();
 
-          // Popup to rename
+          // Popup with rename input
           layer.bindPopup(
             `<b>${displayName}</b><br>
             <input type="text" id="newName-${country}" placeholder="Rename...">
@@ -111,6 +108,7 @@ function loadCountries() {
     });
 }
 
+// Rename a country and immediately update tooltip & store
 function rename(oldName) {
   const input = document.getElementById(`newName-${oldName}`);
   if (!input) return alert("Input not found");
