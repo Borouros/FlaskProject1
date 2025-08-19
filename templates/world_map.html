@@ -12,7 +12,8 @@
     .card-header { background-color: #8B0016; color: white; font-weight: bold; }
     #map-card { height: 80vh; }
     #map { height: 100%; width: 100%; border-radius: 6px; }
-    .country-label { font-weight: bold; color: #8B0016; font-size: 12px; text-shadow: 1px 1px 2px white; }
+    .country-label { font-weight: bold; color: #8B0016; font-size: 12px; text-shadow: 1px 1px 2px white; pointer-events: none; }
+    .leaflet-popup-content input { width: 120px; margin-right: 5px; }
   </style>
 </head>
 <body>
@@ -38,17 +39,21 @@
 <footer class="mt-5 text-center">
   <div class="container">
     <p>&copy; 2025 The Portugal News. All rights reserved.</p>
-    <p>
-      <a href="https://www.theportugalnews.com/terms-and-conditions">Terms and Conditions</a> |
-      <a href="https://www.theportugalnews.com/cookie-policy">Cookie Policy</a>
-    </p>
   </div>
 </footer>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-const map = L.map('map').setView([20, 0], 2);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+let map;
+let geoLayer;
+
+function initMap() {
+  map = L.map('map').setView([20, 0], 2);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  loadCountries();
+}
 
 function getStoredNames() {
   return JSON.parse(localStorage.getItem('renamedCountries') || '{}');
@@ -57,62 +62,65 @@ function saveStoredNames(names) {
   localStorage.setItem('renamedCountries', JSON.stringify(names));
 }
 
-let geoLayer;
+function loadCountries() {
+  fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+    .then(res => res.json())
+    .then(data => {
+      const storedNames = getStoredNames();
 
-fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
-  .then(res => res.json())
-  .then(data => {
-    const storedNames = getStoredNames();
+      geoLayer = L.geoJSON(data, {
+        style: {
+          color: "#8B0016",
+          weight: 1,
+          fillColor: "#FFC107",
+          fillOpacity: 0.6
+        },
+        onEachFeature: (feature, layer) => {
+          const country = feature.properties.name;
+          const displayName = storedNames[country] || country;
 
-    geoLayer = L.geoJSON(data, {
-      style: {
-        color: "#8B0016",
-        weight: 1,
-        fillColor: "#FFC107",
-        fillOpacity: 0.6
-      },
-      onEachFeature: (feature, layer) => {
-        const country = feature.properties.name;
-        const displayName = storedNames[country] || country;
+          layer.bindTooltip(displayName, {
+            permanent: true,
+            direction: "center",
+            className: "country-label"
+          }).openTooltip();
 
-        layer.bindTooltip(displayName, {
-          permanent: true,
-          direction: "center",
-          className: "country-label"
-        }).openTooltip();
+          layer.bindPopup(
+            `<b>${displayName}</b><br>
+            <input type="text" id="newName-${country}" placeholder="Rename...">
+            <button onclick="rename('${country}')">Save</button>`
+          );
 
-        layer.bindPopup(
-          `<b>${displayName}</b><br>
-          <input type="text" id="newName-${country}" placeholder="Rename...">
-          <button onclick="rename('${country}')">Save</button>`
-        );
-
-      }
-    }).addTo(map);
-  });
-
-function rename(oldName) {
-    const input = document.getElementById(`newName-${oldName}`);
-    if (!input) return alert("Input not found");
-    const newName = input.value.trim();
-    if (!newName) return;
-
-    const names = getStoredNames();
-    names[oldName] = newName;
-    saveStoredNames(names);
-
-    geoLayer.eachLayer(layer => {
-        if (layer.countryName === oldName) {
-            layer.unbindTooltip();
-            layer.bindTooltip(newName, {
-              permanent: true,
-              direction: "center",
-              className: "country-label"
-            }).openTooltip();
-            layer.closePopup();
+          layer.countryName = country;
         }
+      }).addTo(map);
     });
 }
+
+function rename(oldName) {
+  const input = document.getElementById(`newName-${oldName}`);
+  if (!input) return alert("Input not found");
+  const newName = input.value.trim();
+  if (!newName) return;
+
+  const names = getStoredNames();
+  names[oldName] = newName;
+  saveStoredNames(names);
+
+  geoLayer.eachLayer(layer => {
+    if (layer.countryName === oldName) {
+      layer.unbindTooltip();
+      layer.bindTooltip(newName, {
+        permanent: true,
+        direction: "center",
+        className: "country-label"
+      }).openTooltip();
+      layer.closePopup();
+    }
+  });
+}
+
+initMap();
 </script>
 
 </body>
