@@ -47,9 +47,19 @@
 let map;
 let geoLayer;
 
+// Europe bounds: [southWestLat, southWestLng], [northEastLat, northEastLng]
+const europeBounds = [[34, -25], [72, 45]]; 
+
 function initMap() {
   // Center map on Europe
-  map = L.map('map').setView([54, 15], 4);
+  map = L.map('map', {
+    center: [54, 15],
+    zoom: 4,
+    minZoom: 3,
+    maxZoom: 7,
+    maxBounds: europeBounds,
+    maxBoundsViscosity: 1.0
+  });
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -68,8 +78,6 @@ function loadCountries() {
     .then(res => res.json())
     .then(data => {
       const storedNames = getStoredNames();
-
-      // Filter only European countries
       const europeanData = data.features.filter(f => f.properties.continent === 'Europe');
 
       geoLayer = L.geoJSON(europeanData, {
@@ -83,12 +91,14 @@ function loadCountries() {
           const country = feature.properties.name;
           const displayName = storedNames[country] || country;
 
+          // Show name permanently
           layer.bindTooltip(displayName, {
             permanent: true,
             direction: "center",
             className: "country-label"
           }).openTooltip();
 
+          // Popup to rename
           layer.bindPopup(
             `<b>${displayName}</b><br>
             <input type="text" id="newName-${country}" placeholder="Rename...">
