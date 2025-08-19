@@ -29,7 +29,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 let geoLayer;
 
-// Helper functions for localStorage
 function getStoredNames() {
     return JSON.parse(localStorage.getItem('renamedCountries') || '{}');
 }
@@ -37,7 +36,6 @@ function saveStoredNames(names) {
     localStorage.setItem('renamedCountries', JSON.stringify(names));
 }
 
-// Simple color generator
 function getRandomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -45,13 +43,11 @@ function getRandomColor() {
     return color;
 }
 
-// Load Europe GeoJSON
 fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
 .then(res => res.json())
 .then(data => {
     const storedNames = getStoredNames();
 
-    // Assign a unique color to each feature
     data.features.forEach(f => {
         f.properties.fillColor = getRandomColor();
     });
@@ -67,10 +63,8 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
             const country = feature.properties.name;
             const displayName = storedNames[country] || country;
 
-            // Permanent tooltip
             layer.bindTooltip(displayName, { permanent: true, direction: "center", className: "country-label" }).openTooltip();
 
-            // Popup for renaming
             layer.bindPopup(() => {
                 const container = document.createElement('div');
                 container.innerHTML = `<b>${displayName}</b><br>

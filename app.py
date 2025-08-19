@@ -468,9 +468,9 @@ def translate_announcements():
 def get_data():
     return jsonify({'key': 'value'})
 
-@app.route('/world_map')
-def world_map():
-    return render_template('world_map.html')
+@app.route('/europe_map')
+def europe_map():
+    return render_template('europe_map.html')
 
 app.debug = True
 
