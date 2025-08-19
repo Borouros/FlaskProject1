@@ -447,7 +447,7 @@ def translate_announcements():
     source = request.args.get("source", "en")
     target = request.args.get("target", "pt")
 
-    announcements = Announcement.query.all()
+    announcements = News.query.all()
     translated_announcements = []
 
     for ann in announcements:
@@ -468,6 +468,9 @@ def translate_announcements():
 def get_data():
     return jsonify({'key': 'value'})
 
+@app.route('/world_map')
+def world_map():
+    return render_template('world_map.html')
 
 app.debug = True
 
