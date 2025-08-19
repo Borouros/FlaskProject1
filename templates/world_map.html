@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>World Map</title>
+  <title>Europe Map</title>
   <meta charset="UTF-8">
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -29,7 +29,7 @@
 
 <main class="container">
   <div class="card mb-5" id="map-card">
-    <div class="card-header">Editable World Map</div>
+    <div class="card-header">Editable Europe Map</div>
     <div class="card-body p-0">
       <div id="map"></div>
     </div>
@@ -48,7 +48,8 @@ let map;
 let geoLayer;
 
 function initMap() {
-  map = L.map('map').setView([20, 0], 2);
+  // Center map on Europe
+  map = L.map('map').setView([54, 15], 4);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
@@ -68,7 +69,10 @@ function loadCountries() {
     .then(data => {
       const storedNames = getStoredNames();
 
-      geoLayer = L.geoJSON(data, {
+      // Filter only European countries
+      const europeanData = data.features.filter(f => f.properties.continent === 'Europe');
+
+      geoLayer = L.geoJSON(europeanData, {
         style: {
           color: "#8B0016",
           weight: 1,
