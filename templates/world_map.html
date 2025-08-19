@@ -36,39 +36,38 @@ function saveStoredNames(names) {
     localStorage.setItem('renamedCountries', JSON.stringify(names));
 }
 
-// Generate a random color for each country
-function getRandomColor() {
-    const letters = '89ABCDEF'; // avoid very light colors
-    let color = '#';
-    for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * letters.length)];
-    return color;
-}
+// Generate distinct colors from a palette
+const palette = [
+  "#e6194b","#3cb44b","#ffe119","#4363d8","#f58231","#911eb4","#46f0f0",
+  "#f032e6","#bcf60c","#fabebe","#008080","#e6beff","#9a6324","#fffac8",
+  "#800000","#aaffc3","#808000","#ffd8b1","#000075","#808080"
+];
+let colorIndex = 0;
 
 fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
 .then(res => res.json())
 .then(data => {
     const storedNames = getStoredNames();
-    const colors = {};
+    const countryColors = {};
+
+    data.features.forEach(f => {
+        countryColors[f.properties.name] = palette[colorIndex % palette.length];
+        colorIndex++;
+    });
 
     geoLayer = L.geoJSON(data, {
-        style: feature => {
-            const country = feature.properties.name;
-            if (!colors[country]) colors[country] = getRandomColor();
-            return {
-                color: "#333",
-                weight: 1,
-                fillColor: colors[country],
-                fillOpacity: 0.7
-            };
-        },
+        style: feature => ({
+            color: "#333",
+            weight: 1,
+            fillColor: countryColors[feature.properties.name],
+            fillOpacity: 0.7
+        }),
         onEachFeature: (feature, layer) => {
             const country = feature.properties.name;
             const displayName = storedNames[country] || country;
 
-            // Permanent tooltip
             layer.bindTooltip(displayName, { permanent: true, direction: "center", className: "country-label" }).openTooltip();
 
-            // Popup with input field
             layer.bindPopup(() => {
                 const container = document.createElement('div');
                 container.innerHTML = `<b>${displayName}</b><br>
@@ -80,7 +79,6 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
                     storedNames[country] = newName;
                     saveStoredNames(storedNames);
 
-                    // Update tooltip
                     layer.unbindTooltip();
                     layer.bindTooltip(newName, { permanent: true, direction: "center", className: "country-label" }).openTooltip();
                     layer.closePopup();
