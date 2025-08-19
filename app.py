@@ -1,23 +1,18 @@
-from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, get_flashed_messages, abort, jsonify, get_post_by_id
+from flask import Flask, render_template, send_file, request, redirect, flash, session, url_for, abort, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
-from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
-from functools import wraps
+from flask_migrate import Migrate
 import os
 from translator import translate
-import response
-from database_module import DatabaseClient
-import sqlite3
 
-conn = sqlite3.connect("yourdatabase.db")
-cursor = conn.cursor()
 
 app = Flask(__name__)
 app.secret_key = 'PortNewsThe'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yourdatabase.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -49,6 +44,13 @@ class Post(db.Model):
     title_pt = db.Column(db.String(150))
     content_en = db.Column(db.Text)
     content_pt = db.Column(db.Text)
+    
+def get_post_by_id(post_id):
+    post = Post.query.get(post_id)
+    if post is None:
+        abort(404, description="Post not found")
+    return post
+    
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -366,7 +368,7 @@ def update_account():
     flash("Account updated successfully.", "success")
     return redirect(url_for('editor'))
 
-@app.route('/translate_post/<int:post_id>')
+@app.route('/translated_post/<int:post_id>')
 def translate_post(post_id):
     from translator import translate
     
@@ -441,27 +443,6 @@ def translate_content(content_type, content_id):
 @app.route('/api/data')
 def get_data():
     return jsonify({'key': 'value'})
-
-@app.route("/translate_post/<int:post_id>")
-def translate_post(post_id):
-    post = get_post_by_id(post_id)
-    if post is None:
-        abort(404, "Post not found")
-
-    translated_text = translate(post.content)
-
-    return render_template(
-        "translate_post.html",
-        original=post.content,
-        translated=translated_text
-    )
-    
-
-with app.app_context():
-    db.create_all()
-
-
-migrate = Migrate(app, db)
 
 
 app.debug = True
