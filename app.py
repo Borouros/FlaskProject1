@@ -440,6 +440,29 @@ def translate_content(content_type, content_id):
         }
     except Exception as e:
         return {'error': str(e)}, 500
+    
+@app.route("/translate_announcements")
+@login_required
+def translate_announcements():
+    source = request.args.get("source", "en")
+    target = request.args.get("target", "pt")
+
+    announcements = Announcement.query.all()
+    translated_announcements = []
+
+    for ann in announcements:
+        translated_announcements.append({
+            "id": ann.id,
+            "title": translate(ann.title, source, target),
+            "content": translate(ann.content, source, target),
+            "created_at": ann.created_at
+        })
+
+    return render_template("translated_announcements.html",
+                           announcements=translated_announcements,
+                           source=source,
+                           target=target)
+    
 
 @app.route('/api/data')
 def get_data():
