@@ -1,131 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Europe Map with Capitals</title>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <title>Europe Map</title>
   <style>
-    body { margin: 0; padding: 0; }
-    #map { height: 100vh; width: 100%; }
-    .country-label {
-      font-weight: bold;
-      color: #000;
-      font-size: 13px;
-      text-shadow: 1px 1px 2px white;
-      pointer-events: none;
-      text-align: center;
+    body { margin: 0; font-family: Arial, sans-serif; }
+    svg { width: 100%; height: auto; }
+    .country {
+      stroke: #333;
+      stroke-width: 1;
+      cursor: pointer;
     }
-    .leaflet-popup-content input { width: 120px; margin-right: 5px; }
+    text {
+      font-size: 12px;
+      text-anchor: middle;
+      pointer-events: none;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-<div id="map"></div>
+  <h2 style="text-align:center;">Editable Europe Map</h2>
+  <svg id="europeMap" viewBox="0 0 1000 800"></svg>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-// === Capitals dictionary (partial example, expand as needed) ===
-const capitals = {
-  "Portugal": [38.7169, -9.139],
-  "Spain": [40.4168, -3.7038],
-  "France": [48.8566, 2.3522],
-  "Germany": [52.52, 13.405],
-  "Italy": [41.9028, 12.4964],
-  "United Kingdom": [51.5074, -0.1278],
-  "Czechia": [50.0755, 14.4378] // note: "Czechia" not "Czech Republic"
-};
+  <script>
+    const countries = [
+      { id: "portugal", name: "Portugal", x: 100, y: 600, color: "#a8dadc" },
+      { id: "spain", name: "Spain", x: 160, y: 620, color: "#f4a261" },
+      { id: "france", name: "France", x: 250, y: 550, color: "#e76f51" },
+      { id: "england", name: "England", x: 240, y: 500, color: "#2a9d8f" },
+      { id: "scotland", name: "Scotland", x: 240, y: 460, color: "#264653" },
+      { id: "wales", name: "Wales", x: 220, y: 500, color: "#8d99ae" },
+      { id: "ireland", name: "Ireland", x: 180, y: 480, color: "#457b9d" },
+      { id: "germany", name: "Germany", x: 320, y: 500, color: "#ffb703" },
+      { id: "italy", name: "Italy", x: 380, y: 600, color: "#fb8500" },
+      { id: "sweden", name: "Sweden", x: 420, y: 350, color: "#90be6d" },
+      { id: "norway", name: "Norway", x: 370, y: 300, color: "#219ebc" },
+      { id: "finland", name: "Finland", x: 470, y: 280, color: "#8ecae6" },
+      { id: "denmark", name: "Denmark", x: 350, y: 420, color: "#e63946" },
+      { id: "poland", name: "Poland", x: 420, y: 500, color: "#f77f00" },
+      { id: "ukraine", name: "Ukraine", x: 520, y: 520, color: "#d62828" },
+      { id: "romania", name: "Romania", x: 500, y: 580, color: "#06d6a0" },
+      { id: "turkey", name: "Turkey", x: 600, y: 650, color: "#118ab2" },
+      { id: "georgia", name: "Georgia", x: 680, y: 620, color: "#8338ec" },
+      // Add more small countries like Belgium, Netherlands, etc.
+    ];
 
-// === Map setup ===
-let map = L.map('map', {
-    center: [54, 15],
-    zoom: 4,
-    minZoom: 3,
-    maxZoom: 7,
-    maxBounds: [[34, -25], [72, 45]],
-    maxBoundsViscosity: 1.0
-});
+    const svg = document.getElementById("europeMap");
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    countries.forEach(c => {
+      // restore name from localStorage
+      const saved = localStorage.getItem("country_" + c.id);
+      if (saved) c.name = saved;
 
-// === LocalStorage helpers ===
-function getStoredNames() {
-    return JSON.parse(localStorage.getItem('renamedCountries') || '{}');
-}
-function saveStoredNames(names) {
-    localStorage.setItem('renamedCountries', JSON.stringify(names));
-}
+      // simple rectangle placeholder (you can replace with actual SVG paths)
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", c.x - 20);
+      rect.setAttribute("y", c.y - 15);
+      rect.setAttribute("width", 40);
+      rect.setAttribute("height", 30);
+      rect.setAttribute("fill", c.color);
+      rect.setAttribute("class", "country");
+      rect.addEventListener("click", () => renameCountry(c));
+      svg.appendChild(rect);
 
-// === Random color generator ===
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
-    return color;
-}
+      // country label
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", c.x);
+      label.setAttribute("y", c.y);
+      label.textContent = c.name;
+      label.setAttribute("id", "label_" + c.id);
+      svg.appendChild(label);
+    });
 
-fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
-.then(res => res.json())
-.then(data => {
-    const storedNames = getStoredNames();
-    const labelMarkers = {};
-
-    L.geoJSON(data, {
-        style: feature => ({
-            color: "#333",
-            weight: 1,
-            fillColor: getRandomColor(),
-            fillOpacity: 0.7
-        }),
-        onEachFeature: (feature, layer) => {
-            const originalName = feature.properties.name;
-            const displayName = storedNames[originalName] || originalName;
-
-            // Try to use capital → fallback to centroid if missing
-            let coords;
-            if (capitals[originalName]) {
-                coords = capitals[originalName];
-            } else {
-                coords = layer.getBounds().getCenter(); // fallback
-            }
-
-            // Always add a label
-            const label = L.marker(coords, {
-                icon: L.divIcon({
-                    className: "country-label",
-                    html: displayName,
-                    iconSize: [100, 20]
-                })
-            }).addTo(map);
-            labelMarkers[originalName] = label;
-
-            // Popup for renaming
-            layer.bindPopup(() => {
-                const container = document.createElement('div');
-                container.innerHTML = `<b>${displayName}</b><br>
-                    <input type="text" placeholder="Rename..." id="input-${originalName}">
-                    <button>Save</button>`;
-                
-                container.querySelector('button').addEventListener('click', () => {
-                    const newName = container.querySelector('input').value.trim();
-                    if (!newName) return;
-
-                    storedNames[originalName] = newName;
-                    saveStoredNames(storedNames);
-
-                    // Update label text
-                    labelMarkers[originalName].setIcon(L.divIcon({
-                        className: "country-label",
-                        html: newName,
-                        iconSize: [100, 20]
-                    }));
-
-                    layer.closePopup();
-                });
-
-                return container;
-            });
-        }
-    }).addTo(map);
-});
-</script>
+    function renameCountry(c) {
+      const newName = prompt("Enter a new name for " + c.name, c.name);
+      if (newName) {
+        c.name = newName;
+        localStorage.setItem("country_" + c.id, newName);
+        document.getElementById("label_" + c.id).textContent = newName;
+      }
+    }
+  </script>
 </body>
 </html>
