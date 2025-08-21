@@ -78,6 +78,9 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
 .then(res => res.json())
 .then(data => {
+    
+  let coords = capitals[originalName] || layer.getBounds().getCenter();
+  
   L.geoJSON(data, {
     style: () => ({
       color: "#333",
