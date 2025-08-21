@@ -2,32 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Editable Europe Map (All Countries)</title>
+  <title>Editable Europe Map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     html, body { height: 100%; margin: 0; }
     #map { height: 100%; }
     .country-label {
-      font-weight: 800;
+      font-weight: bold;
       font-size: 13px;
-      text-shadow: 1px 1px 2px rgba(255,255,255,.95), -1px -1px 2px rgba(255,255,255,.95);
-      text-align: center;
-      white-space: nowrap;
+      text-shadow: 1px 1px 2px white;
       pointer-events: auto;
       cursor: pointer;
+      background: rgba(255,255,255,0.8);
       padding: 2px 4px;
       border-radius: 4px;
     }
-    .leaflet-popup-content input { width: 180px; margin-right: .5rem; }
-    .rename-btn { padding: .25rem .5rem; }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // ---- Capitals (lat, lng). Keys must match GeoJSON 'name' values. ----
+    const map = L.map('map').setView([54, 15], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const labelsLayer = L.layerGroup().addTo(map);
+    const polygonLayer = L.layerGroup().addTo(map);
+
     const capitals = {
       "Albania": [41.3275,19.8189],
       "Andorra": [42.5078,1.5211],
@@ -78,12 +82,10 @@
       "Vatican": [41.9022,12.4539]
     };
 
-    // ---- LocalStorage helpers ----
     const STORAGE_KEY = "euRenamedCountries_v2";
     const getNames = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     const saveNames = (obj) => localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
 
-    // ---- Deterministic distinct color per country (stable across reloads) ----
     function hashCode(str){
       let h = 0; for(let i=0;i<str.length;i++){ h = (h<<5) - h + str.charCodeAt(i); h|=0; } return Math.abs(h);
     }
@@ -91,27 +93,11 @@
       const h = hashCode(name) % 360;
       const s = 55 + (hashCode(name+'s') % 20);
       const l = 58 + (hashCode(name+'l') % 12);
-      return `hsl(${h} ${s}% ${l}%)`;
+      return `hsl(${h}, ${s}%, ${l}%)`;
     }
 
-    // ---- Map ----
-    const map = L.map('map', {
-      center: [54, 15],
-      zoom: 4,
-      minZoom: 3,
-      maxZoom: 8,
-      maxBounds: [[30,-30],[75,50]],
-      maxBoundsViscosity: 1.0
-    });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+    const labelByKey = {};
 
-    const labelsLayer = L.layerGroup().addTo(map); // by-capital labels + extra regions
-    const polygonLayer = L.layerGroup().addTo(map); // polygons
-
-    // Store label markers so we can update them instantly on rename
-    const labelByKey = {};  // key = original country name (and extra region keys)
-
-    // ---- Load Europe countries (includes all European countries; Turkey too) ----
     fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
       .then(r => r.json())
       .then(geo => {
@@ -127,11 +113,8 @@
           onEachFeature: (feature, polygon) => {
             const country = feature.properties.name;
             const currentText = stored[country] ?? country;
-
-            // Position: capital if known; else polygon center
             const pos = capitals[country] || polygon.getBounds().getCenter();
 
-            // Create label marker
             const label = L.marker(pos, {
               icon: L.divIcon({
                 className: "country-label",
@@ -140,21 +123,18 @@
               })
             }).addTo(labelsLayer);
 
-            // Clicking the label also lets you rename
             label.on('click', () => renameKey(country, label, polygon));
-
             labelByKey[country] = label;
 
-            // Click polygon → popup to rename (updates immediately)
             polygon.bindPopup(() => {
               const wrap = document.createElement('div');
               wrap.innerHTML = `
-                <div style="margin-bottom:.25rem"><strong>${country}</strong></div>
+                <div><strong>${country}</strong></div>
                 <input type="text" value="${currentText}" />
-                <button class="rename-btn">Save</button>
+                <button>Save</button>
               `;
               const input = wrap.querySelector('input');
-              wrap.querySelector('.rename-btn').addEventListener('click', () => {
+              wrap.querySelector('button').addEventListener('click', () => {
                 const newText = input.value.trim();
                 if (!newText) return;
                 stored[country] = newText;
@@ -169,10 +149,7 @@
         });
 
         geoLayer.addTo(polygonLayer);
-        polygonLayer.bringToBack();
-        labelsLayer.bringToFront();
 
-        // helpers to update labels
         function updateLabel(key, text){
           const lbl = labelByKey[key];
           if (!lbl) return;
@@ -182,6 +159,7 @@
             iconSize: [140,24]
           }));
         }
+
         function renameKey(key, marker, polygon){
           const storedNow = getNames();
           const current = storedNow[key] ?? key;
@@ -192,8 +170,10 @@
           updateLabel(key, newText);
           if (polygon && polygon.closePopup) polygon.closePopup();
         }
-
-        window.updateLabel = updateLabel;
+      })
+      .catch(err => {
+        alert("Failed to load country data. Please check your internet connection or try again later.");
+        console.error(err);
       });
   </script>
 </body>
