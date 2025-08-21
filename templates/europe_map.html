@@ -7,7 +7,13 @@
   <style>
     body { margin: 0; padding: 0; }
     #map { height: 100vh; width: 100%; }
-    .country-label { font-weight: bold; color: #000; font-size: 12px; text-shadow: 1px 1px 2px white; pointer-events: none; }
+    .country-label {
+      font-weight: bold;
+      color: #000;
+      font-size: 13px;
+      text-shadow: 1px 1px 2px white;
+      pointer-events: none;
+    }
     .leaflet-popup-content input { width: 120px; margin-right: 5px; }
   </style>
 </head>
@@ -16,6 +22,7 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+
 let map = L.map('map', {
     center: [54, 15],
     zoom: 4,
@@ -26,8 +33,6 @@ let map = L.map('map', {
 });
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-let geoLayer;
 
 function getStoredNames() {
     return JSON.parse(localStorage.getItem('renamedCountries') || '{}');
@@ -43,16 +48,32 @@ function getRandomColor() {
     return color;
 }
 
+function getCentroid(coords) {
+    let area = 0, x = 0, y = 0;
+    for (let i = 0; i < coords.length - 1; i++) {
+        let xi = coords[i][0], yi = coords[i][1];
+        let xi1 = coords[i+1][0], yi1 = coords[i+1][1];
+        let cross = xi * yi1 - xi1 * yi;
+        area += cross;
+        x += (xi + xi1) * cross;
+        y += (yi + yi1) * cross;
+    }
+    area *= 0.5;
+    let factor = 1 / (6 * area);
+    return [y * factor, x * factor];
+}
+
 fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
 .then(res => res.json())
 .then(data => {
     const storedNames = getStoredNames();
+    const labelMarkers = {};
 
     data.features.forEach(f => {
         f.properties.fillColor = getRandomColor();
     });
 
-    geoLayer = L.geoJSON(data, {
+    L.geoJSON(data, {
         style: feature => ({
             color: "#333",
             weight: 1,
@@ -60,26 +81,48 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
             fillOpacity: 0.7
         }),
         onEachFeature: (feature, layer) => {
-            const country = feature.properties.name;
-            const displayName = storedNames[country] || country;
+            const originalName = feature.properties.name;
+            const displayName = storedNames[originalName] || originalName;
 
-            layer.bindTooltip(displayName, { permanent: true, direction: "center", className: "country-label" }).openTooltip();
+            let coords = feature.geometry.coordinates;
+            let centroid;
+            if (feature.geometry.type === "Polygon") {
+                centroid = getCentroid(coords[0]);
+            } else if (feature.geometry.type === "MultiPolygon") {
+                centroid = getCentroid(coords[0][0]);
+            }
+
+            const label = L.marker(centroid, {
+                icon: L.divIcon({
+                    className: "country-label",
+                    html: displayName,
+                    iconSize: [100, 20]
+                })
+            }).addTo(map);
+            labelMarkers[originalName] = label;
 
             layer.bindPopup(() => {
                 const container = document.createElement('div');
                 container.innerHTML = `<b>${displayName}</b><br>
-                    <input type="text" placeholder="Rename..." id="input-${country}">
+                    <input type="text" placeholder="Rename..." id="input-${originalName}">
                     <button>Save</button>`;
+                
                 container.querySelector('button').addEventListener('click', () => {
                     const newName = container.querySelector('input').value.trim();
                     if (!newName) return;
-                    storedNames[country] = newName;
+
+                    storedNames[originalName] = newName;
                     saveStoredNames(storedNames);
 
-                    layer.unbindTooltip();
-                    layer.bindTooltip(newName, { permanent: true, direction: "center", className: "country-label" }).openTooltip();
+                    label.setIcon(L.divIcon({
+                        className: "country-label",
+                        html: newName,
+                        iconSize: [100, 20]
+                    }));
+
                     layer.closePopup();
                 });
+
                 return container;
             });
         }
