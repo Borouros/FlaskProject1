@@ -1,86 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Europe Map</title>
+  <meta charset="UTF-8" />
+  <title>Editable Europe Map (All Countries)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; }
-    svg { width: 100%; height: auto; }
-    .country {
-      stroke: #333;
-      stroke-width: 1;
+    html, body { height: 100%; margin: 0; }
+    #map { height: 100%; }
+    .country-label {
+      font-weight: 800;
+      font-size: 13px;
+      text-shadow: 1px 1px 2px rgba(255,255,255,.95), -1px -1px 2px rgba(255,255,255,.95);
+      text-align: center;
+      white-space: nowrap;
+      /* allow clicking labels to rename as well */
+      pointer-events: auto;
       cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
     }
-    text {
-      font-size: 12px;
-      text-anchor: middle;
-      pointer-events: none;
-      font-weight: bold;
-    }
+    .leaflet-popup-content input { width: 180px; margin-right: .5rem; }
+    .rename-btn { padding: .25rem .5rem; }
   </style>
 </head>
 <body>
-  <h2 style="text-align:center;">Editable Europe Map</h2>
-  <svg id="europeMap" viewBox="0 0 1000 800"></svg>
+  <div id="map"></div>
 
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const countries = [
-      { id: "portugal", name: "Portugal", x: 100, y: 600, color: "#a8dadc" },
-      { id: "spain", name: "Spain", x: 160, y: 620, color: "#f4a261" },
-      { id: "france", name: "France", x: 250, y: 550, color: "#e76f51" },
-      { id: "england", name: "England", x: 240, y: 500, color: "#2a9d8f" },
-      { id: "scotland", name: "Scotland", x: 240, y: 460, color: "#264653" },
-      { id: "wales", name: "Wales", x: 220, y: 500, color: "#8d99ae" },
-      { id: "ireland", name: "Ireland", x: 180, y: 480, color: "#457b9d" },
-      { id: "germany", name: "Germany", x: 320, y: 500, color: "#ffb703" },
-      { id: "italy", name: "Italy", x: 380, y: 600, color: "#fb8500" },
-      { id: "sweden", name: "Sweden", x: 420, y: 350, color: "#90be6d" },
-      { id: "norway", name: "Norway", x: 370, y: 300, color: "#219ebc" },
-      { id: "finland", name: "Finland", x: 470, y: 280, color: "#8ecae6" },
-      { id: "denmark", name: "Denmark", x: 350, y: 420, color: "#e63946" },
-      { id: "poland", name: "Poland", x: 420, y: 500, color: "#f77f00" },
-      { id: "ukraine", name: "Ukraine", x: 520, y: 520, color: "#d62828" },
-      { id: "romania", name: "Romania", x: 500, y: 580, color: "#06d6a0" },
-      { id: "turkey", name: "Turkey", x: 600, y: 650, color: "#118ab2" },
-      { id: "georgia", name: "Georgia", x: 680, y: 620, color: "#8338ec" },
-      // Add more small countries like Belgium, Netherlands, etc.
+    // ---- Capitals (lat, lng). Keys must match GeoJSON 'name' values. ----
+    // Full coverage for European sovereign states. If a name isn't here,
+    // code will fall back to the polygon center.
+    const capitals = {
+  "Albania":[41.3275,19.8189],
+  "Andorra":[42.5078,1.5211],
+  "Armenia":[40.1792,44.4991],
+  "Austria":[48.2082,16.3738],
+  "Azerbaijan":[40.4093,49.8671],
+  "Belarus":[53.9,27.5667],
+  "Belgium":[50.8503,4.3517],
+  "Bosnia and Herzegovina":[43.8563,18.4131],
+  "Bulgaria":[42.6977,23.3219],
+  "Croatia":[45.8150,15.9819],
+  "Cyprus":[35.1856,33.3823],
+  "Czechia":[50.0755,14.4378],
+  "Denmark":[55.6761,12.5683],
+  "Estonia":[59.4370,24.7536],
+  "Finland":[60.1699,24.9384],
+  "France":[48.8566,2.3522],
+  "Georgia":[41.7151,44.8271],
+  "Germany":[52.5200,13.4050],
+  "Greece":[37.9838,23.7275],
+  "Hungary":[47.4979,19.0402],
+  "Iceland":[64.1466,-21.9426],
+  "Ireland":[53.3498,-6.2603],
+  "Italy":[41.9028,12.4964],
+  "Kazakhstan":[51.1605,71.4704],
+  "Kosovo":[42.6629,21.1655],
+  "Latvia":[56.9496,24.1052],
+  "Liechtenstein":[47.1410,9.5215],
+  "Lithuania":[54.6872,25.2797],
+  "Luxembourg":[49.6116,6.1319],
+  "Malta":[35.8989,14.5146],
+  "Moldova":[47.0105,28.8638],
+  "Monaco":[43.7384,7.4246],
+  "Montenegro":[42.4304,19.2594],
+  "Netherlands":[52.3676,4.9041],
+  "North Macedonia":[41.9981,21.4254],
+  "Norway":[59.9139,10.7522],
+  "Poland":[52.2297,21.0122],
+  "Portugal":[38.7169,-9.1390],
+  "Romania":[44.4268,26.1025],
+  "Russia":[55.7558,37.6173],
+  "San Marino":[43.9356,12.4473],
+  "Serbia":[44.8176,20.4569],
+  "Slovakia":[48.1486,17.1077],
+  "Slovenia":[46.0569,14.5058],
+  "Spain":[40.4168,-3.7038],
+  "Sweden":[59.3293,18.0686],
+  "Switzerland":[46.9481,7.4474],
+  "Turkey":[39.9208,32.8541],
+  "Ukraine":[50.4500,30.5236],
+  "United Kingdom":[51.5074,-0.1278],
+  "Vatican":[41.9022,12.4539]
+};
+
+
+    const extraRegions = [
+      { key: "Scotland",  coord: [55.9533,-3.1883] }, // Edinburgh
+      { key: "Wales",     coord: [51.4816,-3.1791] }  // Cardiff
     ];
 
-    const svg = document.getElementById("europeMap");
+    const STORAGE_KEY = "euRenamedCountries_v2";
+    const getNames = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const saveNames = (obj) => localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
 
-    countries.forEach(c => {
-      // restore name from localStorage
-      const saved = localStorage.getItem("country_" + c.id);
-      if (saved) c.name = saved;
-
-      // simple rectangle placeholder (you can replace with actual SVG paths)
-      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      rect.setAttribute("x", c.x - 20);
-      rect.setAttribute("y", c.y - 15);
-      rect.setAttribute("width", 40);
-      rect.setAttribute("height", 30);
-      rect.setAttribute("fill", c.color);
-      rect.setAttribute("class", "country");
-      rect.addEventListener("click", () => renameCountry(c));
-      svg.appendChild(rect);
-
-      // country label
-      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      label.setAttribute("x", c.x);
-      label.setAttribute("y", c.y);
-      label.textContent = c.name;
-      label.setAttribute("id", "label_" + c.id);
-      svg.appendChild(label);
-    });
-
-    function renameCountry(c) {
-      const newName = prompt("Enter a new name for " + c.name, c.name);
-      if (newName) {
-        c.name = newName;
-        localStorage.setItem("country_" + c.id, newName);
-        document.getElementById("label_" + c.id).textContent = newName;
-      }
+    function hashCode(str){
+      let h = 0; for(let i=0;i<str.length;i++){ h = (h<<5) - h + str.charCodeAt(i); h|=0; }
+      return Math.abs(h);
     }
+    function colorFor(name){
+      const h = hashCode(name) % 360;
+      const s = 55 + (hashCode(name+'s') % 20);
+      const l = 58 + (hashCode(name+'l') % 12);
+      return `hsl(${h} ${s}% ${l}%)`;
+    }
+
+    const map = L.map('map', {
+      center: [54, 15],
+      zoom: 4,
+      minZoom: 3,
+      maxZoom: 8,
+      maxBounds: [[30,-30],[75,50]],
+      maxBoundsViscosity: 1.0
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }).addTo(map);
+
+    const labelsLayer = L.layerGroup().addTo(map);
+    const polygonLayer = L.layerGroup().addTo(map);
+
+    const labelByKey = {};
+
+    fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
+      .then(r => r.json())
+      .then(geo => {
+        const stored = getNames();
+
+        const geoLayer = L.geoJSON(geo, {
+          style: feat => ({
+            color: "#333",
+            weight: 1,
+            fillColor: colorFor(feat.properties.name),
+            fillOpacity: 0.85
+          }),
+          onEachFeature: (feature, polygon) => {
+            const country = feature.properties.name;
+            const currentText = stored[country] ?? country;
+
+            const pos = capitals[country] || polygon.getBounds().getCenter();
+
+            const label = L.marker(pos, {
+              icon: L.divIcon({
+                className: "country-label",
+                html: currentText,
+                iconSize: [140, 24]
+              })
+            }).addTo(labelsLayer);
+
+            label.on('click', () => renameKey(country, label, polygon));
+
+            labelByKey[country] = label;
+
+            polygon.bindPopup(() => {
+              const wrap = document.createElement('div');
+              wrap.innerHTML = `
+                <div style="margin-bottom:.25rem"><strong>${country}</strong></div>
+                <input type="text" value="${currentText}" />
+                <button class="rename-btn">Save</button>
+              `;
+              const input = wrap.querySelector('input');
+              wrap.querySelector('.rename-btn').addEventListener('click', () => {
+                const newText = input.value.trim();
+                if (!newText) return;
+                stored[country] = newText;
+                saveNames(stored);
+                updateLabel(country, newText);
+                polygon.closePopup();
+              });
+              return wrap;
+            });
+            polygon.on('click', () => polygon.openPopup());
+          }
+        });
+
+        geoLayer.addTo(polygonLayer);
+        polygonLayer.bringToBack();
+        labelsLayer.bringToFront();
+
+        extraRegions.forEach(({key, coord}) => {
+          const text = stored[key] ?? key;
+          const m = L.marker(coord, {
+            icon: L.divIcon({
+              className: "country-label",
+              html: text,
+              iconSize: [120, 24]
+            })
+          }).addTo(labelsLayer);
+          labelByKey[key] = m;
+          m.on('click', () => renameKey(key, m, null));
+        });
+
+        function updateLabel(key, text){
+          const lbl = labelByKey[key];
+          if (!lbl) return;
+          lbl.setIcon(L.divIcon({
+            className: "country-label",
+            html: text,
+            iconSize: [140,24]
+          }));
+        }
+        function renameKey(key, marker, polygon){
+          const storedNow = getNames();
+          const current = storedNow[key] ?? key;
+          const newText = prompt(`Rename "${key}"`, current);
+          if (!newText) return;
+          storedNow[key] = newText;
+          saveNames(storedNow);
+          updateLabel(key, newText);
+          if (polygon && polygon.closePopup) polygon.closePopup();
+        }
+        window.updateLabel = updateLabel;
+      });
   </script>
 </body>
 </html>
