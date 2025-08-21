@@ -1,28 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Europe Map with Capitals</title>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  <style>
-    body { margin: 0; padding: 0; }
-    #map { height: 100vh; width: 100%; }
-    .country-label {
-      font-weight: bold;
-      color: #000;
-      font-size: 13px;
-      text-shadow: 1px 1px 2px white;
-      pointer-events: none;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-// Capitals dictionary
 const capitals = {
   "Albania":[41.3275,19.8189],"Andorra":[42.5078,1.5211],"Austria":[48.2082,16.3738],
   "Belarus":[53.9,27.5667],"Belgium":[50.8503,4.3517],"Bosnia and Herzegovina":[43.8563,18.4131],
@@ -55,7 +31,6 @@ const customNames = {
   "United Kingdom": "eye","Vatican": "occhio"
 };
 
-// Random color generator
 function getRandomColor() {
   const letters = '0123456789ABCDEF';
   let color = '#';
@@ -63,7 +38,6 @@ function getRandomColor() {
   return color;
 }
 
-// Map setup
 let map = L.map('map', {
   center: [54, 15],
   zoom: 4,
@@ -74,11 +48,9 @@ let map = L.map('map', {
 });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// Load Europe GeoJSON and add labels
 fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
 .then(res => res.json())
 .then(data => {
-  
   L.geoJSON(data, {
     style: () => ({
       color: "#333",
@@ -86,30 +58,30 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
       fillColor: getRandomColor(),
       fillOpacity: 0.7
     }),
-onEachFeature: (feature, layer) => {
-  const originalName = feature.properties.name;
-  const displayName = customNames[originalName] || originalName;
-  const coords = capitals[originalName] || layer.getBounds().getCenter();
+    onEachFeature: (feature, layer) => {
+      const originalName = feature.properties.name;
+      const displayName = customNames[originalName] || originalName;
+      const coords = capitals[originalName] || layer.getBounds().getCenter();
 
-  // Add label using tooltip (more dynamic)
-  layer.bindTooltip(displayName, {
-    permanent: true,
-    direction: 'center',
-    className: 'country-label'
-  }).openTooltip();
-}
-  // Correctly access the name and coordinates
-  const displayName = customNames[originalName] || originalName;
-  const coords = capitals[originalName] || layer.getBounds().getCenter();
-  // Add label
-  L.marker(coords, {
-    icon: L.divIcon({
-      className: "country-label",
-      html: displayName,
-      iconSize: [100, 20]
-    })
+      // Tooltip label
+      layer.bindTooltip(displayName, {
+        permanent: true,
+        direction: 'center',
+        className: 'country-label'
+      }).openTooltip();
+
+      // Optional: Add marker label (if you want both)
+      L.marker(coords, {
+        icon: L.divIcon({
+          className: "country-label",
+          html: displayName,
+          iconSize: [100, 20]
+        })
+      }).addTo(map);
+    }
   }).addTo(map);
 
+  //Zoom-based font scaling
   map.on('zoomend', () => {
     const zoom = map.getZoom();
     const size = Math.max(10, zoom * 3);
@@ -118,9 +90,4 @@ onEachFeature: (feature, layer) => {
     });
   });
 });
-
-}
-
 </script>
-</body>
-</html>
