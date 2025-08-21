@@ -89,7 +89,7 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
     onEachFeature: (feature, layer) => {
       const originalName = feature.properties.name;
       const displayName = customNames[originalName] || originalName;
-      const coords = capitals[originalName] || layer.getBounds().getCenter();
+      let coords = capitals[originalName] || layer.getBounds().getCenter();
 
       L.marker(coords, {
         icon: L.divIcon({
