@@ -23,41 +23,18 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-// === Capitals (lat, lng) ===
+// === Capitals dictionary (partial example, expand as needed) ===
 const capitals = {
-  "Portugal": [38.7169, -9.139],   // Lisbon
-  "Spain": [40.4168, -3.7038],     // Madrid
-  "France": [48.8566, 2.3522],     // Paris
-  "Germany": [52.52, 13.405],      // Berlin
-  "Italy": [41.9028, 12.4964],     // Rome
-  "Norway": [59.9139, 10.7522],    // Oslo
-  "Sweden": [59.3293, 18.0686],    // Stockholm
-  "Finland": [60.1699, 24.9384],   // Helsinki
-  "Poland": [52.2297, 21.0122],    // Warsaw
-  "Greece": [37.9838, 23.7275],    // Athens
-  "United Kingdom": [51.5074, -0.1278], // London
-  "Ireland": [53.3331, -6.2489],   // Dublin
-  "Netherlands": [52.3676, 4.9041],// Amsterdam
-  "Belgium": [50.8503, 4.3517],    // Brussels
-  "Denmark": [55.6761, 12.5683],   // Copenhagen
-  "Austria": [48.2082, 16.3738],   // Vienna
-  "Switzerland": [46.9481, 7.4474],// Bern
-  "Czech Republic": [50.0755, 14.4378], // Prague
-  "Hungary": [47.4979, 19.0402],   // Budapest
-  "Romania": [44.4268, 26.1025],   // Bucharest
-  "Bulgaria": [42.6977, 23.3219],  // Sofia
-  "Serbia": [44.8176, 20.4569],    // Belgrade
-  "Croatia": [45.815, 15.9785],    // Zagreb
-  "Slovakia": [48.1486, 17.1077],  // Bratislava
-  "Slovenia": [46.0569, 14.5058],  // Ljubljana
-  "Estonia": [59.437, 24.7536],    // Tallinn
-  "Latvia": [56.9496, 24.1052],    // Riga
-  "Lithuania": [54.6872, 25.2797], // Vilnius
-  "Ukraine": [50.45, 30.5236],     // Kyiv
-  "Russia": [55.7558, 37.6173],    // Moscow
-  "Turkey": [39.9208, 32.8541]     // Ankara (European part)
+  "Portugal": [38.7169, -9.139],
+  "Spain": [40.4168, -3.7038],
+  "France": [48.8566, 2.3522],
+  "Germany": [52.52, 13.405],
+  "Italy": [41.9028, 12.4964],
+  "United Kingdom": [51.5074, -0.1278],
+  "Czechia": [50.0755, 14.4378] // note: "Czechia" not "Czech Republic"
 };
 
+// === Map setup ===
 let map = L.map('map', {
     center: [54, 15],
     zoom: 4,
@@ -69,6 +46,7 @@ let map = L.map('map', {
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
+// === LocalStorage helpers ===
 function getStoredNames() {
     return JSON.parse(localStorage.getItem('renamedCountries') || '{}');
 }
@@ -76,6 +54,7 @@ function saveStoredNames(names) {
     localStorage.setItem('renamedCountries', JSON.stringify(names));
 }
 
+// === Random color generator ===
 function getRandomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -89,33 +68,36 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
     const storedNames = getStoredNames();
     const labelMarkers = {};
 
-    data.features.forEach(f => {
-        f.properties.fillColor = getRandomColor();
-    });
-
     L.geoJSON(data, {
         style: feature => ({
             color: "#333",
             weight: 1,
-            fillColor: feature.properties.fillColor,
+            fillColor: getRandomColor(),
             fillOpacity: 0.7
         }),
         onEachFeature: (feature, layer) => {
             const originalName = feature.properties.name;
             const displayName = storedNames[originalName] || originalName;
 
+            // Try to use capital → fallback to centroid if missing
+            let coords;
             if (capitals[originalName]) {
-                const coords = capitals[originalName];
-                const label = L.marker(coords, {
-                    icon: L.divIcon({
-                        className: "country-label",
-                        html: displayName,
-                        iconSize: [100, 20]
-                    })
-                }).addTo(map);
-                labelMarkers[originalName] = label;
+                coords = capitals[originalName];
+            } else {
+                coords = layer.getBounds().getCenter(); // fallback
             }
 
+            // Always add a label
+            const label = L.marker(coords, {
+                icon: L.divIcon({
+                    className: "country-label",
+                    html: displayName,
+                    iconSize: [100, 20]
+                })
+            }).addTo(map);
+            labelMarkers[originalName] = label;
+
+            // Popup for renaming
             layer.bindPopup(() => {
                 const container = document.createElement('div');
                 container.innerHTML = `<b>${displayName}</b><br>
@@ -129,13 +111,12 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
                     storedNames[originalName] = newName;
                     saveStoredNames(storedNames);
 
-                    if (labelMarkers[originalName]) {
-                        labelMarkers[originalName].setIcon(L.divIcon({
-                            className: "country-label",
-                            html: newName,
-                            iconSize: [100, 20]
-                        }));
-                    }
+                    // Update label text
+                    labelMarkers[originalName].setIcon(L.divIcon({
+                        className: "country-label",
+                        html: newName,
+                        iconSize: [100, 20]
+                    }));
 
                     layer.closePopup();
                 });
