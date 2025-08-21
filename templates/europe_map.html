@@ -86,24 +86,18 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
       fillColor: getRandomColor(),
       fillOpacity: 0.7
     }),
-    onEachFeature: (feature, layer) => {
+onEachFeature: (feature, layer) => {
   const originalName = feature.properties.name;
+  const displayName = customNames[originalName] || originalName;
+  const coords = capitals[originalName] || layer.getBounds().getCenter();
 
-  map.on('zoomend', () => {
-    const zoom = map.getZoom();
-    const size = Math.max(10, zoom * 3); // Example scaling
-    document.querySelectorAll('.country-label').forEach(el => {
-        el.style.fontSize = `${size}px`;
-  });
-});
-
-
+  // Add label using tooltip (more dynamic)
   layer.bindTooltip(displayName, {
     permanent: true,
     direction: 'center',
     className: 'country-label'
   }).openTooltip();
-
+}
   // Correctly access the name and coordinates
   const displayName = customNames[originalName] || originalName;
   const coords = capitals[originalName] || layer.getBounds().getCenter();
@@ -115,10 +109,18 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
       iconSize: [100, 20]
     })
   }).addTo(map);
+
+  map.on('zoomend', () => {
+    const zoom = map.getZoom();
+    const size = Math.max(10, zoom * 3);
+    document.querySelectorAll('.country-label').forEach(el => {
+      el.style.fontSize = `${size}px`;
+    });
+  });
+});
+
 }
 
-  }).addTo(map);
-});
 </script>
 </body>
 </html>
