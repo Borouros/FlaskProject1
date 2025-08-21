@@ -98,7 +98,8 @@
 
     const labelByKey = {};
 
-    fetch('https://raw.githubusercontent.com/Borouros/europe-map-data/refs/heads/main/europe.geojson.txt')
+    fetch('https://raw.githubusercontent.com/Borouros/europe-map-data/main/europe.geojson.txt')
+
       .then(r => r.json())
       .then(geo => {
         const stored = getNames();
@@ -149,6 +150,8 @@
         });
 
         geoLayer.addTo(polygonLayer);
+        map.fitBounds(geoLayer.getBounds());
+
 
         function updateLabel(key, text){
           const lbl = labelByKey[key];
