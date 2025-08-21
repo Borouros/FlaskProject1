@@ -41,6 +41,13 @@ const capitals = {
   "Turkey":[39.9208,32.8541],"Ukraine":[50.45,30.5236],"United Kingdom":[51.5074,-0.1278],
   "Vatican":[41.9022,12.4539]
 };
+const manualOverrides = {
+  "Norway": [64.5, 11.0],
+  "Portugal": [39.5, -8.0],
+  "United Kingdom": [54.5, -2.0],
+  "Croatia": [45.1, 15.2],
+  "Sweden": [60.0, 17.0]
+};
 
 const customNames = {
   "Albania": "syri","Andorra": "ull","Austria": "Auge","Belarus": "вока","Belgium": "œil",
@@ -91,8 +98,7 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
 
   // Correctly access the name and coordinates
   const displayName = customNames[originalName] || originalName;
-  const coords = capitals[originalName] || layer.getBounds().getCenter();
-
+  const coords = manualOverrides[originalName] || capitals[originalName] || layer.getBounds().getCenter();
   // Add label
   L.marker(coords, {
     icon: L.divIcon({
