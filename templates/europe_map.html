@@ -137,21 +137,22 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
       fillColor: getRandomColor(),
       fillOpacity: 0.7
     }),
-    onEachFeature: (feature, layer) => {
-        const originalName = normalizeName(feature.properties.name);
-        const displayName = customNames[originalName] || originalName;
-        const coords = capitals[originalName] || layer.getBounds().getCenter();
+onEachFeature: (feature, layer) => {
+  const normalizedName = normalizeName(feature.properties.name);
+  const displayName = customNames[normalizedName] || normalizedName;
+  const coords = capitals[normalizedName] || layer.getBounds().getCenter();
+  console.log("Country:", feature.properties.name);
+  console.log("Normalized:", normalizedName);
+  console.log("Coords:", coords);
+  console.log("Label:", displayName);
 
 
-      // Optional: Add marker label (if you want both)
-      L.marker(coords, {
-        icon: L.divIcon({
-          className: "country-label",
-          html: displayName,
-          iconSize: [100, 20]
-        })
-      }).addTo(map);
-    }
+  L.marker(coords, {
+    icon: L.divIcon({
+      className: "country-label",
+      html: displayName,
+      iconSize: [100, 20]
+    })
   }).addTo(map);
 
   //Zoom-based font scaling
