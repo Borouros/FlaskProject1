@@ -43,6 +43,56 @@ const capitals = {
       "Vatican":[41.9022,12.4539]
     };
 
+const customNames = {
+  "Albania": "syri",
+  "Andorra": "ull",
+  "Austria": "Auge",
+  "Belarus": "вока",
+  "Belgium": "œil",       // French
+  "Bosnia and Herzegovina": "oko",
+  "Bulgaria": "око",
+  "Croatia": "oko",
+  "Cyprus": "μάτι",       // Greek
+  "Czechia": "oko",
+  "Denmark": "øje",
+  "Estonia": "silm",
+  "Finland": "silmä",
+  "France": "œil",
+  "Germany": "Auge",
+  "Greece": "μάτι",
+  "Hungary": "szem",
+  "Iceland": "auga",
+  "Ireland": "súil",
+  "Italy": "occhio",
+  "Kosovo": "syri",
+  "Latvia": "acs",
+  "Liechtenstein": "Auge",
+  "Lithuania": "akis",
+  "Luxembourg": "Aen",
+  "Malta": "għajn",
+  "Moldova": "ochi",
+  "Monaco": "œil",
+  "Montenegro": "oko",
+  "Netherlands": "oog",
+  "North Macedonia": "око",
+  "Norway": "øye",
+  "Poland": "oko",
+  "Portugal": "olho",
+  "Romania": "ochi",
+  "San Marino": "occhio",
+  "Serbia": "око",
+  "Slovakia": "oko",
+  "Slovenia": "oko",
+  "Spain": "ojo",
+  "Sweden": "öga",
+  "Switzerland": "Auge",
+  "Turkey": "göz",
+  "Ukraine": "око",
+  "United Kingdom": "eye",
+  "Vatican": "occhio"
+};
+
+
 // LocalStorage helpers
 function getStoredNames() {
     return JSON.parse(localStorage.getItem('renamedCountries') || '{}');
@@ -74,64 +124,67 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
 .then(res => res.json())
 .then(data => {
     const storedNames = getStoredNames();
-    const labelMarkers = {};
+const labelMarkers = {};
 
-    L.geoJSON(data, {
-        style: () => ({
-            color: "#333",
-            weight: 1,
-            fillColor: getRandomColor(),
-            fillOpacity: 0.7
-        }),
-        onEachFeature: (feature, layer) => {
-            const originalName = feature.properties.name;
-            const displayName = storedNames[originalName] || originalName;
+L.geoJSON(data, {
+    style: () => ({
+        color: "#333",
+        weight: 1,
+        fillColor: getRandomColor(),
+        fillOpacity: 0.7
+    }),
+    onEachFeature: (feature, layer) => {
+        const originalName = feature.properties.name;
 
-            // Place label on capital or centroid
-            let coords = capitals[originalName] || layer.getBounds().getCenter();
-            const label = L.marker(coords, {
-                icon: L.divIcon({
+        // Use stored name if available, otherwise custom name, otherwise original
+        const displayName = storedNames[originalName] || customNames[originalName] || originalName;
+
+        // Place label on capital or centroid
+        let coords = capitals[originalName] || layer.getBounds().getCenter();
+        const label = L.marker(coords, {
+            icon: L.divIcon({
+                className: "country-label",
+                html: displayName,
+                iconSize: [100, 20]
+            })
+        }).addTo(map);
+        labelMarkers[originalName] = label;
+
+        // Popup for renaming
+        layer.bindPopup(() => {
+            const container = document.createElement('div');
+            container.innerHTML = `
+                <b>${displayName}</b><br>
+                <input type="text" placeholder="Rename..." value="${displayName}">
+                <button>Save</button>
+            `;
+
+            const input = container.querySelector('input');
+            const button = container.querySelector('button');
+
+            button.addEventListener('click', () => {
+                const newName = input.value.trim();
+                if (!newName) return;
+
+                // Save in localStorage
+                storedNames[originalName] = newName;
+                saveStoredNames(storedNames);
+
+                // Update label immediately
+                label.setIcon(L.divIcon({
                     className: "country-label",
-                    html: displayName,
+                    html: newName,
                     iconSize: [100, 20]
-                })
-            }).addTo(map);
-            labelMarkers[originalName] = label;
+                }));
 
-            // Popup for renaming
-            layer.bindPopup(() => {
-                const container = document.createElement('div');
-                container.innerHTML = `
-                    <b>${displayName}</b><br>
-                    <input type="text" placeholder="Rename..." value="${displayName}">
-                    <button>Save</button>
-                `;
-
-                const input = container.querySelector('input');
-                const button = container.querySelector('button');
-
-                button.addEventListener('click', () => {
-                    const newName = input.value.trim();
-                    if (!newName) return;
-
-                    // Save in localStorage
-                    storedNames[originalName] = newName;
-                    saveStoredNames(storedNames);
-
-                    // Update only this label immediately
-                    label.setIcon(L.divIcon({
-                        className: "country-label",
-                        html: newName,
-                        iconSize: [100, 20]
-                    }));
-
-                    layer.closePopup();
-                });
-
-                return container;
+                layer.closePopup();
             });
-        }
-    }).addTo(map);
+
+            return container;
+        });
+    }
+}).addTo(map);
+
 });
 </script>
 </body>
