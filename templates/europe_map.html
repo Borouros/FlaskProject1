@@ -91,7 +91,7 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
 
   // Correctly access the name and coordinates
   const displayName = customNames[originalName] || originalName;
-  const coords = manualOverrides[originalName] || capitals[originalName] || layer.getBounds().getCenter();
+  const coords = capitals[originalName] || layer.getBounds().getCenter();
   // Add label
   L.marker(coords, {
     icon: L.divIcon({
