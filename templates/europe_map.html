@@ -108,7 +108,7 @@ function normalizeName(name) {
   };
   return nameMap[name] || name;
 }
-
+const originalName = normalizeName(feature.properties.name);
 
 
 function getRandomColor() {
@@ -140,13 +140,8 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
     }),
     onEachFeature: (feature, layer) => {
         const originalName = normalizeName(feature.properties.name);
-        const displayName = customNames[originalName] ?? originalName;
-        const coords = capitals[originalName];
-
-        if (!coords) {
-          console.warn(`Missing capital coordinates for: ${originalName}`);
-        }
-        const markerCoords = coords || layer.getBounds().getCenter();
+        const displayName = customNames[originalName] || originalName;
+        const coords = capitals[originalName] || layer.getBounds().getCenter();
 
 
       // Optional: Add marker label (if you want both)
