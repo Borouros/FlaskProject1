@@ -98,7 +98,7 @@
 
     const labelByKey = {};
 
-    fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
+    fetch('https://raw.githubusercontent.com/Borouros/europe-map-data/refs/heads/main/europe.geojson.txt')
       .then(r => r.json())
       .then(geo => {
         const stored = getNames();
