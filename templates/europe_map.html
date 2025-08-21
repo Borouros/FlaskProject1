@@ -89,6 +89,21 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
     onEachFeature: (feature, layer) => {
   const originalName = feature.properties.name;
 
+  map.on('zoomend', () => {
+    const zoom = map.getZoom();
+    const size = Math.max(10, zoom * 3); // Example scaling
+    document.querySelectorAll('.country-label').forEach(el => {
+        el.style.fontSize = `${size}px`;
+  });
+});
+
+
+  layer.bindTooltip(displayName, {
+    permanent: true,
+    direction: 'center',
+    className: 'country-label'
+  }).openTooltip();
+
   // Correctly access the name and coordinates
   const displayName = customNames[originalName] || originalName;
   const coords = capitals[originalName] || layer.getBounds().getCenter();
