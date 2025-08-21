@@ -57,60 +57,6 @@ const customNames = {
   "United Kingdom": "eye","Vatican": "occhio"
 };
 
-function normalizeName(name) {
-  const nameMap = {
-    "Republic of Albania": "Albania",
-    "Principality of Andorra": "Andorra",
-    "Republic of Austria": "Austria",
-    "Republic of Belarus": "Belarus",
-    "Kingdom of Belgium": "Belgium",
-    "Bosnia and Herzegovina": "Bosnia and Herzegovina",
-    "Republic of Bulgaria": "Bulgaria",
-    "Republic of Croatia": "Croatia",
-    "Republic of Cyprus": "Cyprus",
-    "Czech Republic": "Czechia",
-    "Kingdom of Denmark": "Denmark",
-    "Republic of Estonia": "Estonia",
-    "Republic of Finland": "Finland",
-    "French Republic": "France",
-    "Federal Republic of Germany": "Germany",
-    "Hellenic Republic": "Greece",
-    "Hungary": "Hungary",
-    "Republic of Iceland": "Iceland",
-    "Ireland": "Ireland",
-    "Italian Republic": "Italy",
-    "Republic of Kosovo": "Kosovo",
-    "Republic of Latvia": "Latvia",
-    "Principality of Liechtenstein": "Liechtenstein",
-    "Republic of Lithuania": "Lithuania",
-    "Grand Duchy of Luxembourg": "Luxembourg",
-    "Republic of Malta": "Malta",
-    "Republic of Moldova": "Moldova",
-    "Principality of Monaco": "Monaco",
-    "Montenegro": "Montenegro",
-    "Kingdom of the Netherlands": "Netherlands",
-    "Republic of North Macedonia": "North Macedonia",
-    "Kingdom of Norway": "Norway",
-    "Republic of Poland": "Poland",
-    "Portuguese Republic": "Portugal",
-    "Romania": "Romania",
-    "Republic of San Marino": "San Marino",
-    "Republic of Serbia": "Serbia",
-    "Slovak Republic": "Slovakia",
-    "Republic of Slovenia": "Slovenia",
-    "Kingdom of Spain": "Spain",
-    "Kingdom of Sweden": "Sweden",
-    "Swiss Confederation": "Switzerland",
-    "Republic of Türkiye": "Turkey",
-    "Ukraine": "Ukraine",
-    "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
-    "Vatican City State": "Vatican"
-  };
-  return nameMap[name] || name;
-}
-const originalName = normalizeName(feature.properties.name);
-
-
 function getRandomColor() {
   const letters = '0123456789ABCDEF';
   let color = '#';
@@ -139,11 +85,10 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
       fillOpacity: 0.7
     }),
     onEachFeature: (feature, layer) => {
-        const originalName = normalizeName(feature.properties.name);
-        const displayName = customNames[originalName] || originalName;
-        const coords = capitals[originalName] || layer.getBounds().getCenter();
-
-
+      const originalName = feature.properties.name;
+      const displayName = customNames[originalName] || originalName;
+      const coords = capitals[originalName] || layer.getBounds().getCenter();
+      
       // Optional: Add marker label (if you want both)
       L.marker(coords, {
         icon: L.divIcon({
