@@ -139,9 +139,10 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
       fillOpacity: 0.7
     }),
     onEachFeature: (feature, layer) => {
-      const originalName = feature.properties.name;
-      const displayName = customNames[originalName] || originalName;
-      const coords = capitals[originalName] || layer.getBounds().getCenter();
+        const originalName = normalizeName(feature.properties.name);
+        const displayName = customNames[originalName] || originalName;
+        const coords = capitals[originalName] || layer.getBounds().getCenter();
+
 
       // Optional: Add marker label (if you want both)
       L.marker(coords, {
