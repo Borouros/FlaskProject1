@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Europe Map</title>
+  <title>Europe Map with Capitals</title>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
@@ -13,6 +13,7 @@
       font-size: 13px;
       text-shadow: 1px 1px 2px white;
       pointer-events: none;
+      text-align: center;
     }
     .leaflet-popup-content input { width: 120px; margin-right: 5px; }
   </style>
@@ -22,6 +23,40 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+// === Capitals (lat, lng) ===
+const capitals = {
+  "Portugal": [38.7169, -9.139],   // Lisbon
+  "Spain": [40.4168, -3.7038],     // Madrid
+  "France": [48.8566, 2.3522],     // Paris
+  "Germany": [52.52, 13.405],      // Berlin
+  "Italy": [41.9028, 12.4964],     // Rome
+  "Norway": [59.9139, 10.7522],    // Oslo
+  "Sweden": [59.3293, 18.0686],    // Stockholm
+  "Finland": [60.1699, 24.9384],   // Helsinki
+  "Poland": [52.2297, 21.0122],    // Warsaw
+  "Greece": [37.9838, 23.7275],    // Athens
+  "United Kingdom": [51.5074, -0.1278], // London
+  "Ireland": [53.3331, -6.2489],   // Dublin
+  "Netherlands": [52.3676, 4.9041],// Amsterdam
+  "Belgium": [50.8503, 4.3517],    // Brussels
+  "Denmark": [55.6761, 12.5683],   // Copenhagen
+  "Austria": [48.2082, 16.3738],   // Vienna
+  "Switzerland": [46.9481, 7.4474],// Bern
+  "Czech Republic": [50.0755, 14.4378], // Prague
+  "Hungary": [47.4979, 19.0402],   // Budapest
+  "Romania": [44.4268, 26.1025],   // Bucharest
+  "Bulgaria": [42.6977, 23.3219],  // Sofia
+  "Serbia": [44.8176, 20.4569],    // Belgrade
+  "Croatia": [45.815, 15.9785],    // Zagreb
+  "Slovakia": [48.1486, 17.1077],  // Bratislava
+  "Slovenia": [46.0569, 14.5058],  // Ljubljana
+  "Estonia": [59.437, 24.7536],    // Tallinn
+  "Latvia": [56.9496, 24.1052],    // Riga
+  "Lithuania": [54.6872, 25.2797], // Vilnius
+  "Ukraine": [50.45, 30.5236],     // Kyiv
+  "Russia": [55.7558, 37.6173],    // Moscow
+  "Turkey": [39.9208, 32.8541]     // Ankara (European part)
+};
 
 let map = L.map('map', {
     center: [54, 15],
@@ -48,21 +83,6 @@ function getRandomColor() {
     return color;
 }
 
-function getCentroid(coords) {
-    let area = 0, x = 0, y = 0;
-    for (let i = 0; i < coords.length - 1; i++) {
-        let xi = coords[i][0], yi = coords[i][1];
-        let xi1 = coords[i+1][0], yi1 = coords[i+1][1];
-        let cross = xi * yi1 - xi1 * yi;
-        area += cross;
-        x += (xi + xi1) * cross;
-        y += (yi + yi1) * cross;
-    }
-    area *= 0.5;
-    let factor = 1 / (6 * area);
-    return [y * factor, x * factor];
-}
-
 fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
 .then(res => res.json())
 .then(data => {
@@ -84,22 +104,17 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
             const originalName = feature.properties.name;
             const displayName = storedNames[originalName] || originalName;
 
-            let coords = feature.geometry.coordinates;
-            let centroid;
-            if (feature.geometry.type === "Polygon") {
-                centroid = getCentroid(coords[0]);
-            } else if (feature.geometry.type === "MultiPolygon") {
-                centroid = getCentroid(coords[0][0]);
+            if (capitals[originalName]) {
+                const coords = capitals[originalName];
+                const label = L.marker(coords, {
+                    icon: L.divIcon({
+                        className: "country-label",
+                        html: displayName,
+                        iconSize: [100, 20]
+                    })
+                }).addTo(map);
+                labelMarkers[originalName] = label;
             }
-
-            const label = L.marker(centroid, {
-                icon: L.divIcon({
-                    className: "country-label",
-                    html: displayName,
-                    iconSize: [100, 20]
-                })
-            }).addTo(map);
-            labelMarkers[originalName] = label;
 
             layer.bindPopup(() => {
                 const container = document.createElement('div');
@@ -114,11 +129,13 @@ fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSO
                     storedNames[originalName] = newName;
                     saveStoredNames(storedNames);
 
-                    label.setIcon(L.divIcon({
-                        className: "country-label",
-                        html: newName,
-                        iconSize: [100, 20]
-                    }));
+                    if (labelMarkers[originalName]) {
+                        labelMarkers[originalName].setIcon(L.divIcon({
+                            className: "country-label",
+                            html: newName,
+                            iconSize: [100, 20]
+                        }));
+                    }
 
                     layer.closePopup();
                 });
