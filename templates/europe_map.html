@@ -1,112 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Europe Map with Capitals</title>
+  <title>Europe Map with Capitals - "Eye" in Local Languages</title>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
-    body { margin: 0; padding: 0; }
-    #map { height: 100vh; width: 100%; }
-    .country-label {
-        font-weight: bold;
-        color: #000;
-        font-size: 13px;
-        text-shadow: 1px 1px 2px white;
-         pointer-events: none;
-          text-align: center;
-          background: transparent; /* Removes white box */
-          border: none;
+    body { 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
     
+    #map { 
+      height: 100vh; 
+      width: 100%; 
+    }
+    
+    .country-label {
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 13px;
+      text-shadow: 2px 2px 4px rgba(255,255,255,0.8), -1px -1px 2px rgba(255,255,255,0.8);
+      pointer-events: none;
+      text-align: center;
+      background: transparent;
+      border: none;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    
+    .info-panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      max-width: 300px;
+      z-index: 1000;
+      font-size: 14px;
+    }
+    
+    .info-panel h3 {
+      margin: 0 0 10px 0;
+      color: #2c3e50;
+      font-size: 16px;
+    }
+    
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 8px;
+      z-index: 1001;
+    }
+    
+    .country-hover {
+      cursor: pointer;
+    }
+    
+    @media (max-width: 768px) {
+      .info-panel {
+        position: relative;
+        top: 0;
+        right: 0;
+        margin: 10px;
+        max-width: none;
+      }
+    }
   </style>
 </head>
 <body>
-<div id="map"></div>
+  <div id="loading" class="loading">Loading European countries...</div>
+  <div id="map"></div>
+  <div class="info-panel">
+    <h3>👁️ Eyes of Europe</h3>
+    <p>Each label shows the word for "eye" in that country's local language.</p>
+    <p><strong>Hover</strong> over countries to see details!</p>
+  </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-const capitals = {
-  "Albania":[41.3275,19.8189],"Andorra":[42.5078,1.5211],"Austria":[48.2082,16.5738],
-  "Belarus":[53.9,27.5667],"Belgium":[50.8503,4.3517],"Bosnia and Herzegovina":[43.8563,18.4131],
-  "Bulgaria":[42.6977,23.3219],"Croatia":[45.8150, 15.9819],"Cyprus":[35.1856,33.3823],
-  "Czechia":[50.0755,14.4378],"Denmark":[55.6761,12.5683],"Estonia":[59.437,24.7536],
-  "Finland":[60.1699,24.9384],"France":[48.8566,2.3522],"Germany":[52.52,13.405],
-  "Greece":[37.9838,23.7275],"Hungary":[47.4979,19.0402],"Iceland":[64.1466,-21.9426],
-  "Ireland":[53.3498,-6.2603],"Italy":[41.9028,12.4964],"Kosovo":[42.6629,21.1655],
-  "Latvia":[56.9496,24.1052],"Liechtenstein":[47.141,9.5215],"Lithuania":[54.6872,25.2797],
-  "Luxembourg":[49.6116,6.1319],"Malta":[35.8989,14.5146],"Moldova":[47.0105,28.8638],
-  "Monaco":[43.7384,7.4246],"Montenegro":[42.4304,19.2594],"Netherlands":[52.3676,4.9041],
-  "North Macedonia":[41.9981,21.4254],"Norway":[60.493407, 8.383383],"Poland":[52.2297,21.0122],
-  "Portugal":[38.7169,-9.139],"Romania":[44.4268,26.1025],"San Marino":[43.9356,12.4473],
-  "Serbia":[44.8176,20.4569],"Slovakia":[48.1486,17.1077],"Slovenia":[46.0569,14.5058],
-  "Spain":[40.4168,-3.7038],"Sweden":[60.0, 17.0],"Switzerland":[46.9481,7.4474],
-  "Turkey":[39.9208,32.8541],"Ukraine":[50.45,30.5236],"United Kingdom":[54.5, -2.0],
-  "Vatican":[41.9022,12.4539]
-};
-
-const customNames = {
-  "Albania": "syri","Andorra": "ull","Austria": "Auge","Belarus": "вока","Belgium": "œil",
-  "Bosnia and Herzegovina": "oko","Bulgaria": "око","Croatia": "oko","Cyprus": "μάτι",
-  "Czechia": "oko","Denmark": "øje","Estonia": "silm","Finland": "silmä","France": "œil",
-  "Germany": "Auge","Greece": "μάτι","Hungary": "szem","Iceland": "auga","Ireland": "súil",
-  "Italy": "occhio","Kosovo": "syri","Latvia": "acs","Liechtenstein": "Auge","Lithuania": "akis",
-  "Luxembourg": "Aen","Malta": "għajn","Moldova": "ochi","Monaco": "œil","Montenegro": "oko",
-  "Netherlands": "oog","North Macedonia": "око","Norway": "øye","Poland": "oko","Portugal": "olho",
-  "Romania": "ochi","San Marino": "occhio","Serbia": "око","Slovakia": "oko","Slovenia": "oko",
-  "Spain": "ojo","Sweden": "öga","Switzerland": "Auge","Turkey": "göz","Ukraine": "око",
-  "United Kingdom": "eye","Vatican": "occhio"
-};
-
-function getRandomColor() {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
-  return color;
-}
-
-let map = L.map('map', {
-  center: [54, 15],
-  zoom: 4,
+// Configuration object for better organization
+const CONFIG = {
+  mapCenter: [54, 15],
+  initialZoom: 4,
   minZoom: 3,
   maxZoom: 7,
   maxBounds: [[34, -25], [72, 45]],
+  geojsonUrl: 'https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson'
+};
+
+const capitals = {
+  "Albania": [41.3275, 19.8189], "Andorra": [42.5078, 1.5211], "Austria": [48.2082, 16.5738],
+  "Belarus": [53.9, 27.5667], "Belgium": [50.8503, 4.3517], "Bosnia and Herzegovina": [43.8563, 18.4131],
+  "Bulgaria": [42.6977, 23.3219], "Croatia": [45.8150, 15.9819], "Cyprus": [35.1856, 33.3823],
+  "Czechia": [50.0755, 14.4378], "Denmark": [55.6761, 12.5683], "Estonia": [59.437, 24.7536],
+  "Finland": [60.1699, 24.9384], "France": [48.8566, 2.3522], "Germany": [52.52, 13.405],
+  "Greece": [37.9838, 23.7275], "Hungary": [47.4979, 19.0402], "Iceland": [64.1466, -21.9426],
+  "Ireland": [53.3498, -6.2603], "Italy": [41.9028, 12.4964], "Kosovo": [42.6629, 21.1655],
+  "Latvia": [56.9496, 24.1052], "Liechtenstein": [47.141, 9.5215], "Lithuania": [54.6872, 25.2797],
+  "Luxembourg": [49.6116, 6.1319], "Malta": [35.8989, 14.5146], "Moldova": [47.0105, 28.8638],
+  "Monaco": [43.7384, 7.4246], "Montenegro": [42.4304, 19.2594], "Netherlands": [52.3676, 4.9041],
+  "North Macedonia": [41.9981, 21.4254], "Norway": [60.493407, 8.383383], "Poland": [52.2297, 21.0122],
+  "Portugal": [38.7169, -9.139], "Romania": [44.4268, 26.1025], "San Marino": [43.9356, 12.4473],
+  "Serbia": [44.8176, 20.4569], "Slovakia": [48.1486, 17.1077], "Slovenia": [46.0569, 14.5058],
+  "Spain": [40.4168, -3.7038], "Sweden": [60.0, 17.0], "Switzerland": [46.9481, 7.4474],
+  "Turkey": [39.9208, 32.8541], "Ukraine": [50.45, 30.5236], "United Kingdom": [54.5, -2.0],
+  "Vatican": [41.9022, 12.4539]
+};
+
+// Keep it simple like your original - just the display names
+const customNames = {
+  "Albania": "syri", "Andorra": "ull", "Austria": "Auge", "Belarus": "вока", "Belgium": "œil",
+  "Bosnia and Herzegovina": "oko", "Bulgaria": "око", "Croatia": "oko", "Cyprus": "μάτι",
+  "Czechia": "oko", "Denmark": "øje", "Estonia": "silm", "Finland": "silmä", "France": "œil",
+  "Germany": "Auge", "Greece": "μάτι", "Hungary": "szem", "Iceland": "auga", "Ireland": "súil",
+  "Italy": "occhio", "Kosovo": "syri", "Latvia": "acs", "Liechtenstein": "Auge", "Lithuania": "akis",
+  "Luxembourg": "Aen", "Malta": "għajn", "Moldova": "ochi", "Monaco": "œil", "Montenegro": "oko",
+  "Netherlands": "oog", "North Macedonia": "око", "Norway": "øye", "Poland": "oko", "Portugal": "olho",
+  "Romania": "ochi", "San Marino": "occhio", "Serbia": "око", "Slovakia": "oko", "Slovenia": "oko",
+  "Spain": "ojo", "Sweden": "öga", "Switzerland": "Auge", "Turkey": "göz", "Ukraine": "око",
+  "United Kingdom": "eye", "Vatican": "occhio"
+};
+
+const pronunciations = {
+  "Albania": "SY-ree", "Andorra": "ool", "Austria": "OW-geh", "Belarus": "VOH-ka", "Belgium": "uh-y",
+  "Bosnia and Herzegovina": "OH-ko", "Bulgaria": "OH-ko", "Croatia": "OH-ko", "Cyprus": "MAH-tee",
+  "Czechia": "OH-ko", "Denmark": "UR-yeh", "Estonia": "silm", "Finland": "SIL-mah", "France": "uh-y",
+  "Germany": "OW-geh", "Greece": "MAH-tee", "Hungary": "sem", "Iceland": "OW-ga", "Ireland": "SOO-il",
+  "Italy": "OH-kee-oh", "Kosovo": "SY-ree", "Latvia": "ahts", "Liechtenstein": "OW-geh", "Lithuania": "AH-kis",
+  "Luxembourg": "ah-en", "Malta": "ah-yn", "Moldova": "OH-kee", "Monaco": "uh-y", "Montenegro": "OH-ko",
+  "Netherlands": "ohg", "North Macedonia": "OH-ko", "Norway": "UR-yeh", "Poland": "OH-ko", "Portugal": "OH-lyo",
+  "Romania": "OH-kee", "San Marino": "OH-kee-oh", "Serbia": "OH-ko", "Slovakia": "OH-ko", "Slovenia": "OH-ko",
+  "Spain": "OH-ho", "Sweden": "UR-ga", "Switzerland": "OW-geh", "Turkey": "gurz", "Ukraine": "OH-ko",
+  "United Kingdom": "ahy", "Vatican": "OH-kee-oh"
+};
+
+// Better color palette for countries
+const countryColors = [
+  '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', 
+  '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#f1c40f'
+];
+
+let colorIndex = 0;
+let currentTooltip = null;
+
+function normalizeName(name) {
+  const nameMap = {
+    "Republic of Albania": "Albania", "Principality of Andorra": "Andorra",
+    "Republic of Austria": "Austria", "Republic of Belarus": "Belarus",
+    "Kingdom of Belgium": "Belgium", "Republic of Bulgaria": "Bulgaria",
+    "Republic of Croatia": "Croatia", "Republic of Cyprus": "Cyprus",
+    "Czech Republic": "Czechia", "Kingdom of Denmark": "Denmark",
+    "Republic of Estonia": "Estonia", "Republic of Finland": "Finland",
+    "French Republic": "France", "Federal Republic of Germany": "Germany",
+    "Hellenic Republic": "Greece", "Republic of Iceland": "Iceland",
+    "Italian Republic": "Italy", "Republic of Kosovo": "Kosovo",
+    "Republic of Latvia": "Latvia", "Principality of Liechtenstein": "Liechtenstein",
+    "Republic of Lithuania": "Lithuania", "Grand Duchy of Luxembourg": "Luxembourg",
+    "Republic of Malta": "Malta", "Republic of Moldova": "Moldova",
+    "Principality of Monaco": "Monaco", "Kingdom of the Netherlands": "Netherlands",
+    "Republic of North Macedonia": "North Macedonia", "Kingdom of Norway": "Norway",
+    "Republic of Poland": "Poland", "Portuguese Republic": "Portugal",
+    "Republic of San Marino": "San Marino", "Republic of Serbia": "Serbia",
+    "Slovak Republic": "Slovakia", "Republic of Slovenia": "Slovenia",
+    "Kingdom of Spain": "Spain", "Kingdom of Sweden": "Sweden",
+    "Swiss Confederation": "Switzerland", "Republic of Türkiye": "Turkey",
+    "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
+    "Vatican City State": "Vatican"
+  };
+  return nameMap[name] || name;
+}
+
+function getNextColor() {
+  const color = countryColors[colorIndex % countryColors.length];
+  colorIndex++;
+  return color;
+}
+
+function createTooltip(country, word, pronunciation) {
+  return `
+    <div style="font-family: sans-serif; padding: 5px;">
+      <strong>${country}</strong><br>
+      Word: <em>${word}</em><br>
+      Pronunciation: /${pronunciation}/
+    </div>
+  `;
+}
+
+function hideLoading() {
+  const loading = document.getElementById('loading');
+  if (loading) loading.style.display = 'none';
+}
+
+// Initialize map
+const map = L.map('map', {
+  center: CONFIG.mapCenter,
+  zoom: CONFIG.initialZoom,
+  minZoom: CONFIG.minZoom,
+  maxZoom: CONFIG.maxZoom,
+  maxBounds: CONFIG.maxBounds,
   maxBoundsViscosity: 1.0
 });
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
-.then(res => res.json())
-.then(data => {
-  L.geoJSON(data, {
-    style: () => ({
-      color: "#333",
-      weight: 1,
-      fillColor: getRandomColor(),
-      fillOpacity: 0.7
-    }),
-    onEachFeature: (feature, layer) => {
-      const originalName = feature.properties.name;
-      const displayName = customNames[originalName] || originalName;
-      const coords = capitals[originalName] || layer.getBounds().getCenter();
-      
-      // Optional: Add marker label (if you want both)
-      L.marker(coords, {
-        icon: L.divIcon({
-          className: "country-label",
-          html: displayName,
-          iconSize: [100, 20]
-        })
-      }).addTo(map);
+// Add tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Fetch and display countries
+fetch(CONFIG.geojsonUrl)
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return res.json();
+  })
+  .then(data => {
+    const geoLayer = L.geoJSON(data, {
+      style: () => ({
+        color: "#2c3e50",
+        weight: 2,
+        fillColor: getNextColor(),
+        fillOpacity: 0.6
+      }),
+      onEachFeature: (feature, layer) => {
+        const normalizedName = normalizeName(feature.properties.name);
+        const displayName = customNames[normalizedName] || normalizedName;
+        const coords = capitals[normalizedName] || layer.getBounds().getCenter();
+        
+        console.log(`Processing: ${feature.properties.name} -> ${normalizedName} -> ${displayName}`);
+        
+        // Add country label using your coords and display names
+        const marker = L.marker(coords, {
+          icon: L.divIcon({
+            className: "country-label",
+            html: displayName,
+            iconSize: [100, 20]
+          })
+        }).addTo(map);
+
+        // Add hover effects
+        layer.on({
+          mouseover: (e) => {
+            const layer = e.target;
+            layer.setStyle({
+              weight: 3,
+              fillOpacity: 0.8
+            });
+            
+            if (currentTooltip) map.closePopup(currentTooltip);
+            const pronunciation = pronunciations[normalizedName] || "unknown";
+            currentTooltip = L.popup()
+              .setLatLng(e.latlng)
+              .setContent(createTooltip(normalizedName, displayName, pronunciation))
+              .openOn(map);
+          },
+          mouseout: (e) => {
+            const layer = e.target;
+            layer.setStyle({
+              weight: 2,
+              fillOpacity: 0.6
+            });
+            if (currentTooltip) {
+              map.closePopup(currentTooltip);
+              currentTooltip = null;
+            }
+          }
+        });
+      }
+    }).addTo(map);
+
+    // Zoom-based font scaling with better performance
+    function updateLabelSizes() {
+      const zoom = map.getZoom();
+      const size = Math.max(8, Math.min(20, zoom * 2.5));
+      document.querySelectorAll('.country-label').forEach(el => {
+        el.style.fontSize = `${size}px`;
+      });
     }
-  }).addTo(map);
 
-  //Zoom-based font scaling
-  map.on('zoomend', () => {
-    const zoom = map.getZoom();
-    const size = Math.max(10, zoom * 3);
-    document.querySelectorAll('.country-label').forEach(el => {
-      el.style.fontSize = `${size}px`;
+    // Throttled zoom handler for better performance
+    let zoomTimeout;
+    map.on('zoomend', () => {
+      clearTimeout(zoomTimeout);
+      zoomTimeout = setTimeout(updateLabelSizes, 100);
     });
+
+    // Initial label sizing
+    updateLabelSizes();
+    hideLoading();
+  })
+  .catch(error => {
+    console.error('Error loading map data:', error);
+    hideLoading();
+    document.body.innerHTML = `
+      <div style="padding: 50px; text-align: center; font-family: sans-serif;">
+        <h2>Error Loading Map</h2>
+        <p>Unable to load European countries data. Please check your internet connection and try again.</p>
+        <p><small>Error: ${error.message}</small></p>
+      </div>
+    `;
   });
+
+// Handle window resize
+window.addEventListener('resize', () => {
+  map.invalidateSize();
 });
 </script>
+</body>
+</html>
