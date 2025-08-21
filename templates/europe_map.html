@@ -8,15 +8,16 @@
     body { margin: 0; padding: 0; }
     #map { height: 100vh; width: 100%; }
     .country-label {
-      font-weight: bold;
-      color: #000;
-      font-size: 13px;
-      text-shadow: 1px 1px 2px white;
-      pointer-events: none;
-      text-align: center;
-      background: transparent;
-      border: none;
+        font-weight: bold;
+        color: #000;
+        font-size: 13px;
+        text-shadow: 1px 1px 2px white;
+         pointer-events: none;
+          text-align: center;
+          background: transparent; /* Removes white box */
+          border: none;
     }
+    
   </style>
 </head>
 <body>
@@ -25,68 +26,99 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
 const capitals = {
-  "Albania":[41.3275,19.8189], "Andorra":[42.5078,1.5211], "Austria":[48.2082,16.5738],
-  "Belarus":[53.9,27.5667], "Belgium":[50.8503,4.3517], "Bosnia and Herzegovina":[43.8563,18.4131],
-  "Bulgaria":[42.6977,23.3219], "Croatia":[45.8150,15.9819], "Cyprus":[35.1856,33.3823],
-  "Czechia":[50.0755,14.4378], "Denmark":[55.6761,12.5683], "Estonia":[59.437,24.7536],
-  "Finland":[60.1699,24.9384], "France":[48.8566,2.3522], "Germany":[52.52,13.405],
-  "Greece":[37.9838,23.7275], "Hungary":[47.4979,19.0402], "Iceland":[64.1466,-21.9426],
-  "Ireland":[53.3498,-6.2603], "Italy":[41.9028,12.4964], "Kosovo":[42.6629,21.1655],
-  "Latvia":[56.9496,24.1052], "Liechtenstein":[47.141,9.5215], "Lithuania":[54.6872,25.2797],
-  "Luxembourg":[49.6116,6.1319], "Malta":[35.8989,14.5146], "Moldova":[47.0105,28.8638],
-  "Monaco":[43.7384,7.4246], "Montenegro":[42.4304,19.2594], "Netherlands":[52.3676,4.9041],
-  "North Macedonia":[41.9981,21.4254], "Norway":[60.493407,8.383383], "Poland":[52.2297,21.0122],
-  "Portugal":[38.7169,-9.139], "Romania":[44.4268,26.1025], "San Marino":[43.9356,12.4473],
-  "Serbia":[44.8176,20.4569], "Slovakia":[48.1486,17.1077], "Slovenia":[46.0569,14.5058],
-  "Spain":[40.4168,-3.7038], "Sweden":[60.0,17.0], "Switzerland":[46.9481,7.4474],
-  "Turkey":[39.9208,32.8541], "Ukraine":[50.45,30.5236], "United Kingdom":[54.5,-2.0],
+  "Albania":[41.3275,19.8189],"Andorra":[42.5078,1.5211],"Austria":[48.2082,16.5738],
+  "Belarus":[53.9,27.5667],"Belgium":[50.8503,4.3517],"Bosnia and Herzegovina":[43.8563,18.4131],
+  "Bulgaria":[42.6977,23.3219],"Croatia":[45.8150, 15.9819],"Cyprus":[35.1856,33.3823],
+  "Czechia":[50.0755,14.4378],"Denmark":[55.6761,12.5683],"Estonia":[59.437,24.7536],
+  "Finland":[60.1699,24.9384],"France":[48.8566,2.3522],"Germany":[52.52,13.405],
+  "Greece":[37.9838,23.7275],"Hungary":[47.4979,19.0402],"Iceland":[64.1466,-21.9426],
+  "Ireland":[53.3498,-6.2603],"Italy":[41.9028,12.4964],"Kosovo":[42.6629,21.1655],
+  "Latvia":[56.9496,24.1052],"Liechtenstein":[47.141,9.5215],"Lithuania":[54.6872,25.2797],
+  "Luxembourg":[49.6116,6.1319],"Malta":[35.8989,14.5146],"Moldova":[47.0105,28.8638],
+  "Monaco":[43.7384,7.4246],"Montenegro":[42.4304,19.2594],"Netherlands":[52.3676,4.9041],
+  "North Macedonia":[41.9981,21.4254],"Norway":[60.493407, 8.383383],"Poland":[52.2297,21.0122],
+  "Portugal":[38.7169,-9.139],"Romania":[44.4268,26.1025],"San Marino":[43.9356,12.4473],
+  "Serbia":[44.8176,20.4569],"Slovakia":[48.1486,17.1077],"Slovenia":[46.0569,14.5058],
+  "Spain":[40.4168,-3.7038],"Sweden":[60.0, 17.0],"Switzerland":[46.9481,7.4474],
+  "Turkey":[39.9208,32.8541],"Ukraine":[50.45,30.5236],"United Kingdom":[54.5, -2.0],
   "Vatican":[41.9022,12.4539]
 };
 
 const customNames = {
-  "Albania": "syri", "Andorra": "ull", "Austria": "Auge", "Belarus": "вока", "Belgium": "œil",
-  "Bosnia and Herzegovina": "oko", "Bulgaria": "око", "Croatia": "oko", "Cyprus": "μάτι",
-  "Czechia": "oko", "Denmark": "øje", "Estonia": "silm", "Finland": "silmä", "France": "œil",
-  "Germany": "Auge", "Greece": "μάτι", "Hungary": "szem", "Iceland": "auga", "Ireland": "súil",
-  "Italy": "occhio", "Kosovo": "syri", "Latvia": "acs", "Liechtenstein": "Auge", "Lithuania": "akis",
-  "Luxembourg": "Aen", "Malta": "għajn", "Moldova": "ochi", "Monaco": "œil", "Montenegro": "oko",
-  "Netherlands": "oog", "North Macedonia": "око", "Norway": "øye", "Poland": "oko", "Portugal": "olho",
-  "Romania": "ochi", "San Marino": "occhio", "Serbia": "око", "Slovakia": "oko", "Slovenia": "oko",
-  "Spain": "ojo", "Sweden": "öga", "Switzerland": "Auge", "Turkey": "göz", "Ukraine": "око",
-  "United Kingdom": "eye", "Vatican": "occhio"
+  "Albania": "syri","Andorra": "ull","Austria": "Auge","Belarus": "вока","Belgium": "œil",
+  "Bosnia and Herzegovina": "oko","Bulgaria": "око","Croatia": "oko","Cyprus": "μάτι",
+  "Czechia": "oko","Denmark": "øje","Estonia": "silm","Finland": "silmä","France": "œil",
+  "Germany": "Auge","Greece": "μάτι","Hungary": "szem","Iceland": "auga","Ireland": "súil",
+  "Italy": "occhio","Kosovo": "syri","Latvia": "acs","Liechtenstein": "Auge","Lithuania": "akis",
+  "Luxembourg": "Aen","Malta": "għajn","Moldova": "ochi","Monaco": "œil","Montenegro": "oko",
+  "Netherlands": "oog","North Macedonia": "око","Norway": "øye","Poland": "oko","Portugal": "olho",
+  "Romania": "ochi","San Marino": "occhio","Serbia": "око","Slovakia": "oko","Slovenia": "oko",
+  "Spain": "ojo","Sweden": "öga","Switzerland": "Auge","Turkey": "göz","Ukraine": "око",
+  "United Kingdom": "eye","Vatican": "occhio"
 };
 
 function normalizeName(name) {
   const nameMap = {
-    "Republic of Albania": "Albania", "Principality of Andorra": "Andorra",
-    "Republic of Austria": "Austria", "Republic of Belarus": "Belarus",
-    "Kingdom of Belgium": "Belgium", "Bosnia and Herzegovina": "Bosnia and Herzegovina",
-    "Republic of Bulgaria": "Bulgaria", "Republic of Croatia": "Croatia",
-    "Republic of Cyprus": "Cyprus", "Czech Republic": "Czechia", "Kingdom of Denmark": "Denmark",
-    "Republic of Estonia": "Estonia", "Republic of Finland": "Finland", "French Republic": "France",
-    "Federal Republic of Germany": "Germany", "Hellenic Republic": "Greece", "Hungary": "Hungary",
-    "Republic of Iceland": "Iceland", "Ireland": "Ireland", "Italian Republic": "Italy",
-    "Republic of Kosovo": "Kosovo", "Republic of Latvia": "Latvia",
-    "Principality of Liechtenstein": "Liechtenstein", "Republic of Lithuania": "Lithuania",
-    "Grand Duchy of Luxembourg": "Luxembourg", "Republic of Malta": "Malta",
-    "Republic of Moldova": "Moldova", "Principality of Monaco": "Monaco", "Montenegro": "Montenegro",
-    "Kingdom of the Netherlands": "Netherlands", "Republic of North Macedonia": "North Macedonia",
-    "Kingdom of Norway": "Norway", "Republic of Poland": "Poland", "Portuguese Republic": "Portugal",
-    "Romania": "Romania", "Republic of San Marino": "San Marino", "Republic of Serbia": "Serbia",
-    "Slovak Republic": "Slovakia", "Republic of Slovenia": "Slovenia", "Kingdom of Spain": "Spain",
-    "Kingdom of Sweden": "Sweden", "Swiss Confederation": "Switzerland", "Republic of Türkiye": "Turkey",
-    "Ukraine": "Ukraine", "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
+    "Republic of Albania": "Albania",
+    "Principality of Andorra": "Andorra",
+    "Republic of Austria": "Austria",
+    "Republic of Belarus": "Belarus",
+    "Kingdom of Belgium": "Belgium",
+    "Bosnia and Herzegovina": "Bosnia and Herzegovina",
+    "Republic of Bulgaria": "Bulgaria",
+    "Republic of Croatia": "Croatia",
+    "Republic of Cyprus": "Cyprus",
+    "Czech Republic": "Czechia",
+    "Kingdom of Denmark": "Denmark",
+    "Republic of Estonia": "Estonia",
+    "Republic of Finland": "Finland",
+    "French Republic": "France",
+    "Federal Republic of Germany": "Germany",
+    "Hellenic Republic": "Greece",
+    "Hungary": "Hungary",
+    "Republic of Iceland": "Iceland",
+    "Ireland": "Ireland",
+    "Italian Republic": "Italy",
+    "Republic of Kosovo": "Kosovo",
+    "Republic of Latvia": "Latvia",
+    "Principality of Liechtenstein": "Liechtenstein",
+    "Republic of Lithuania": "Lithuania",
+    "Grand Duchy of Luxembourg": "Luxembourg",
+    "Republic of Malta": "Malta",
+    "Republic of Moldova": "Moldova",
+    "Principality of Monaco": "Monaco",
+    "Montenegro": "Montenegro",
+    "Kingdom of the Netherlands": "Netherlands",
+    "Republic of North Macedonia": "North Macedonia",
+    "Kingdom of Norway": "Norway",
+    "Republic of Poland": "Poland",
+    "Portuguese Republic": "Portugal",
+    "Romania": "Romania",
+    "Republic of San Marino": "San Marino",
+    "Republic of Serbia": "Serbia",
+    "Slovak Republic": "Slovakia",
+    "Republic of Slovenia": "Slovenia",
+    "Kingdom of Spain": "Spain",
+    "Kingdom of Sweden": "Sweden",
+    "Swiss Confederation": "Switzerland",
+    "Republic of Türkiye": "Turkey",
+    "Ukraine": "Ukraine",
+    "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
     "Vatican City State": "Vatican"
   };
   return nameMap[name] || name;
 }
 
+
+
 function getRandomColor() {
   const letters = '0123456789ABCDEF';
-  return '#' + Array.from({length: 6}, () => letters[Math.floor(Math.random() * 16)]).join('');
+  let color = '#';
+  for (let i = 0; i < 6; i++) color += letters[Math.floor(Math.random() * 16)];
+  return color;
 }
 
-const map = L.map('map', {
+let map = L.map('map', {
   center: [54, 15],
   zoom: 4,
   minZoom: 3,
@@ -94,14 +126,42 @@ const map = L.map('map', {
   maxBounds: [[34, -25], [72, 45]],
   maxBoundsViscosity: 1.0
 });
-
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 fetch('https://raw.githubusercontent.com/leakyMirror/map-of-europe/master/GeoJSON/europe.geojson')
-  .then(res => res.json())
-  .then(data => {
-    L.geoJSON(data, {
-      style: () => ({
-        color: "#333",
-        weight: 1,
-        fillColor: getRandomColor(),
+.then(res => res.json())
+.then(data => {
+  L.geoJSON(data, {
+    style: () => ({
+      color: "#333",
+      weight: 1,
+      fillColor: getRandomColor(),
+      fillOpacity: 0.7
+    }),
+    onEachFeature: (feature, layer) => {
+        const originalName = normalizeName(feature.properties.name);
+        const displayName = customNames[originalName] || originalName;
+        const coords = capitals[originalName] || layer.getBounds().getCenter();
+
+
+      // Optional: Add marker label (if you want both)
+      L.marker(coords, {
+        icon: L.divIcon({
+          className: "country-label",
+          html: displayName,
+          iconSize: [100, 20]
+        })
+      }).addTo(map);
+    }
+  }).addTo(map);
+
+  //Zoom-based font scaling
+  map.on('zoomend', () => {
+    const zoom = map.getZoom();
+    const size = Math.max(10, zoom * 3);
+    document.querySelectorAll('.country-label').forEach(el => {
+      el.style.fontSize = `${size}px`;
+    });
+  });
+});
+</script>
