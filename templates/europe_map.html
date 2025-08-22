@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Europe Map with Capitals - "Eye" in Local Languages</title>
+  <title>Europe Map</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
@@ -80,17 +80,15 @@
   <div id="loading" class="loading">Loading European countries...</div>
   <div id="map"></div>
   <div class="info-panel">
-    <h3>👁️ Eyes of Europe</h3>
+    <h3>Eyes of Europe</h3>
     <p>Each label shows the word for "eye" in that country's local language.</p>
     <p><strong>Hover</strong> over countries to see details!</p>
   </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-// Wait for Leaflet to fully load before running our code
 window.addEventListener('load', function() {
   
-// Configuration object for better organization
 const CONFIG = {
   mapCenter: [54, 15],
   initialZoom: 4,
@@ -120,7 +118,6 @@ const capitals = {
   "Vatican": [41.9022, 12.4539]
 };
 
-// Keep it simple like your original - just the display names
 const customNames = {
   "Albania": "syri", "Andorra": "ull", "Austria": "Auge", "Belarus": "вока", "Belgium": "œil",
   "Bosnia and Herzegovina": "oko", "Bulgaria": "око", "Croatia": "oko", "Cyprus": "μάτι",
@@ -147,7 +144,6 @@ const pronunciations = {
   "United Kingdom": "ahy", "Vatican": "OH-kee-oh"
 };
 
-// Better color palette for countries
 const countryColors = [
   '#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', 
   '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#f1c40f'
@@ -204,7 +200,6 @@ function hideLoading() {
   if (loading) loading.style.display = 'none';
 }
 
-// Initialize map
 const map = L.map('map', {
   center: CONFIG.mapCenter,
   zoom: CONFIG.initialZoom,
@@ -214,12 +209,10 @@ const map = L.map('map', {
   maxBoundsViscosity: 1.0
 });
 
-// Add tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// Fetch and display countries
 fetch(CONFIG.geojsonUrl)
   .then(res => {
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -240,7 +233,6 @@ fetch(CONFIG.geojsonUrl)
         
         console.log(`Processing: ${feature.properties.name} -> ${normalizedName} -> ${displayName}`);
         
-        // Add country label using your coords and display names
         const marker = L.marker(coords, {
           icon: L.divIcon({
             className: "country-label",
@@ -249,7 +241,6 @@ fetch(CONFIG.geojsonUrl)
           })
         }).addTo(map);
 
-        // Add hover effects
         layer.on({
           mouseover: (e) => {
             const layer = e.target;
@@ -280,7 +271,6 @@ fetch(CONFIG.geojsonUrl)
       }
     }).addTo(map);
 
-    // Zoom-based font scaling with better performance
     function updateLabelSizes() {
       const zoom = map.getZoom();
       const size = Math.max(8, Math.min(20, zoom * 2.5));
@@ -289,14 +279,12 @@ fetch(CONFIG.geojsonUrl)
       });
     }
 
-    // Throttled zoom handler for better performance
     let zoomTimeout;
     map.on('zoomend', () => {
       clearTimeout(zoomTimeout);
       zoomTimeout = setTimeout(updateLabelSizes, 100);
     });
 
-    // Initial label sizing
     updateLabelSizes();
     hideLoading();
   })
@@ -312,12 +300,11 @@ fetch(CONFIG.geojsonUrl)
     `;
   });
 
-// Handle window resize
 window.addEventListener('resize', () => {
   map.invalidateSize();
 });
 
-}); // End of window load event listener
+});
 </script>
 </body>
 </html>
