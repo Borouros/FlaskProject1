@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,6 +87,9 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+// Wait for Leaflet to fully load before running our code
+window.addEventListener('load', function() {
+  
 // Configuration object for better organization
 const CONFIG = {
   mapCenter: [54, 15],
@@ -301,7 +305,7 @@ fetch(CONFIG.geojsonUrl)
     hideLoading();
     document.body.innerHTML = `
       <div style="padding: 50px; text-align: center; font-family: sans-serif;">
-        <h2>Error Loading Map</h2>
+        <h2>❌ Error Loading Map</h2>
         <p>Unable to load European countries data. Please check your internet connection and try again.</p>
         <p><small>Error: ${error.message}</small></p>
       </div>
@@ -312,6 +316,8 @@ fetch(CONFIG.geojsonUrl)
 window.addEventListener('resize', () => {
   map.invalidateSize();
 });
+
+}); // End of window load event listener
 </script>
 </body>
 </html>
