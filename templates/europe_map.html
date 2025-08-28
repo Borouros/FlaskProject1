@@ -6,33 +6,80 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); overflow:hidden; }
-    #map { height:100vh; width:100%; border-radius:0; }
-    .map-header { position:absolute; top:20px; left:20px; z-index:1001; background:rgba(255,255,255,0.95); backdrop-filter:blur(10px); padding:16px 24px; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.1); border:1px solid rgba(255,255,255,0.2);}
-    .map-header h1 { font-size:24px; font-weight:600; color:#2d3748; margin-bottom:4px; }
-    .map-header p { font-size:14px; color:#718096; font-weight:400; }
-    .country-label { font-size:13px; font-weight:500; text-align:center; color:#2d3748; text-shadow:0 1px 3px rgba(255,255,255,0.8); font-family:'Inter',sans-serif; background:rgba(255,255,255,0.9); padding:4px 8px; border-radius:8px; border:1px solid rgba(0,0,0,0.1); backdrop-filter:blur(4px); }
-    .hover-info { position:absolute; background:rgba(45,55,72,0.95); backdrop-filter:blur(12px); color:white; padding:16px 20px; border-radius:12px; pointer-events:none; z-index:1000; font-size:14px; box-shadow:0 12px 48px rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); font-family:'Inter',sans-serif; min-width:200px; transform:translateY(-10px); transition: all 0.2s ease;}
-    .hover-info h4 { margin:0 0 8px 0; font-size:18px; font-weight:600; color:#f7fafc;}
-    .hover-info .info-row { display:flex; justify-content:space-between; align-items:center; margin:6px 0; padding:2px 0; }
-    .hover-info .info-label { font-size:12px; color:#a0aec0; font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
-    .hover-info .info-value { font-size:14px; color:#e2e8f0; font-weight:400; text-align:right; }
-    .hover-info .info-value.pronunciation { font-style:italic; color:#bee3f8; }
-    .hover-info .info-value.word { font-weight:500; color:#90cdf4; font-size:16px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); overflow: hidden; }
+    #map { height: 100vh; width: 100%; border-radius: 0; }
+
+    .map-header {
+      position: absolute;
+      top: 20px; left: 20px; z-index: 1001;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      padding: 16px 24px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .map-header h1 { font-size: 24px; font-weight: 600; color: #2d3748; margin-bottom: 4px; }
+    .map-header p { font-size: 14px; color: #718096; font-weight: 400; }
+
+    .country-label {
+      font-size: 13px; font-weight: 500; text-align: center; color: #2d3748;
+      text-shadow: 0 1px 3px rgba(255,255,255,0.8);
+      font-family: 'Inter', sans-serif;
+      background: rgba(255,255,255,0.9); padding: 4px 8px;
+      border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); backdrop-filter: blur(4px);
+    }
+
+    .hover-info {
+      position: absolute;
+      background: rgba(45,55,72,0.95); backdrop-filter: blur(12px);
+      color: white; padding: 16px 20px; border-radius: 12px;
+      pointer-events: none; z-index: 1000; font-size: 14px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+      font-family: 'Inter', sans-serif; min-width: 200px;
+      transform: translateY(-10px); transition: all 0.2s ease;
+    }
+    .hover-info h4 { margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #f7fafc; }
+    .hover-info .info-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; padding: 2px 0; }
+    .hover-info .info-label { font-size: 12px; color: #a0aec0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .hover-info .info-value { font-size: 14px; color: #e2e8f0; font-weight: 400; text-align: right; }
+    .hover-info .info-value.pronunciation { font-style: italic; color: #bee3f8; }
+    .hover-info .info-value.word { font-weight: 500; color: #90cdf4; font-size: 16px; }
+
+    /* Leaflet popups */
+    .leaflet-popup-content-wrapper { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-radius: 12px; box-shadow: 0 12px 48px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.1); }
+    .leaflet-popup-content { margin: 16px 20px; font-family: 'Inter', sans-serif; }
+    .leaflet-popup-content h4 { margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #2d3748; }
+    .leaflet-popup-content p { margin: 8px 0; color: #4a5568; font-size: 14px; }
+    .leaflet-popup-content input { width: 100%; padding: 8px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; margin: 8px 0; transition: border-color 0.2s ease; }
+    .leaflet-popup-content input:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,0.1); }
+    .leaflet-popup-content button { background: linear-gradient(135deg,#4299e1,#3182ce); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; font-family: 'Inter', sans-serif; }
+    .leaflet-popup-content button:hover { background: linear-gradient(135deg,#3182ce,#2c5aa0); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(66,153,225,0.3); }
+    .leaflet-popup-tip { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); }
+
+    /* Custom zoom controls */
+    .leaflet-control-zoom { border: none !important; box-shadow: 0 8px 32px rgba(0,0,0,0.1) !important; }
+    .leaflet-control-zoom a { background: rgba(255,255,255,0.9) !important; backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.1) !important; color: #4a5568 !important; font-weight: 600; transition: all 0.2s ease; }
+    .leaflet-control-zoom a:hover { background: rgba(255,255,255,1) !important; color: #2d3748 !important; }
   </style>
 </head>
 <body>
-<div class="map-header">
-  <h1>European Languages</h1>
-  <p>Hover to explore the word for "eye"</p>
-</div>
-<div id="map"></div>
-<div id="hover-info" class="hover-info" style="display:none;"></div>
+  <div class="map-header">
+    <h1>European Languages</h1>
+    <p>Hover to explore the word for "eye"</p>
+  </div>
+  <div id="map"></div>
+  <div id="hover-info" class="hover-info" style="display:none;"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const capitals = {
+      "Albania": [41.3275, 19.8189], "Andorra": [42.5078, 1.5211], "Austria": [48.2082, 16.5738],
+      "United Kingdom": [51.5074, -0.1278],
+      "Vatican": [41.9022, 12.4539],
+      "Russia": [55.7558, 37.6173]
+    };
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-// Main capitals
     const capitals = {
       // Europe
       "Albania": [41.3275, 19.8189], "Andorra": [42.5078, 1.5211], "Austria": [48.2082, 16.5738],
@@ -144,61 +191,73 @@
       return nameMap[name] || name;
     }
 
-const hoverInfo=document.getElementById('hover-info');
-function showHoverInfo(e,country){ 
-  hoverInfo.innerHTML=`<h4>${country}</h4>
-  <div class="info-row"><span class="info-label">Word</span><span class="info-value word">${customNames[country]}</span></div>
-  <div class="info-row"><span class="info-label">Pronunciation</span><span class="info-value pronunciation">${pronunciations[country]}</span></div>`;
-  hoverInfo.style.display='block';
-  hoverInfo.style.left=Math.min(e.pageX+15,window.innerWidth-220)+'px';
-  hoverInfo.style.top=Math.max(e.pageY-10,10)+'px';
-}
-function hideHoverInfo(){ hoverInfo.style.display='none'; }
-function updateHoverInfo(e){ hoverInfo.style.left=Math.min(e.pageX+15,window.innerWidth-220)+'px'; hoverInfo.style.top=Math.max(e.pageY-10,10)+'px'; }
-
-const map=L.map('map',{zoomControl:true,maxBounds:[[25,-30],[75,80]],maxBoundsViscosity:1.0}).setView([54,-2],5);
-
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  subdomains:'abcd',maxZoom:19
-}).addTo(map);
-
-// Fetch main countries
-fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
-.then(res=>res.json())
-.then(data=>{
-  L.geoJSON(data,{
-    style:feature=>{
-      let name=feature.properties.name;
-      if(name==="United Kingdom of Great Britain and Northern Ireland") return {color:"#8B7355",weight:1.5,fillColor:getNextColor(),fillOpacity:0.4};
-      return {fillOpacity:0};
-    },
-    onEachFeature:(feature,layer)=>{
-      if(feature.properties.name==="United Kingdom of Great Britain and Northern Ireland"){
-        layer.on('mouseover',e=>showHoverInfo(e,"United Kingdom"));
-        layer.on('mouseout',hideHoverInfo);
-        layer.on('mousemove',e=>updateHoverInfo(e.originalEvent));
-      }
+    const hoverInfo = document.getElementById('hover-info');
+    function showHoverInfo(e,country,displayName){
+      const pron = pronunciations[country]||"";
+      const word = customNames[country]||"";
+      hoverInfo.innerHTML = `<h4>${country}</h4>
+        <div class="info-row"><span class="info-label">Word</span><span class="info-value word">${word}</span></div>
+        <div class="info-row"><span class="info-label">Pronunciation</span><span class="info-value pronunciation">${pron}</span></div>
+        ${displayName!==word?`<div class="info-row"><span class="info-label">Custom</span><span class="info-value">${displayName}</span></div>`:''}`;
+      hoverInfo.style.display='block';
+      hoverInfo.style.left=Math.min(e.pageX+15,window.innerWidth-220)+'px';
+      hoverInfo.style.top=Math.max(e.pageY-10,10)+'px';
     }
-  }).addTo(map);
-});
+    function hideHoverInfo(){ hoverInfo.style.display='none'; }
+    function updateHoverInfo(e){ hoverInfo.style.left=Math.min(e.pageX+15,window.innerWidth-220)+'px'; hoverInfo.style.top=Math.max(e.pageY-10,10)+'px'; }
 
-// Scotland & Wales polygons as separate GeoJSON
-const scotlandGeo = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-5.5,55.5],[-1.5,55.5],[-1.5,58.7],[-5.5,58.7],[-5.5,55.5]]]}};
-const walesGeo = {"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-4.5,51.3],[-2.5,51.3],[-2.5,53.5],[-4.5,53.5],[-4.5,51.3]]]}}; 
+    const map = L.map('map',{zoomControl:true,attributionControl:true,maxBounds:[[25,-30],[75,80]],maxBoundsViscosity:1.0}).setView([50,20],4);
 
-function addRegion(feature, name){
-  L.geoJSON(feature,{
-    style:{color:"#654321",weight:1.5,fillColor:getNextColor(),fillOpacity:0.5},
-    onEachFeature:(f,layer)=>{
-      layer.on('mouseover',e=>showHoverInfo(e,name));
-      layer.on('mouseout',hideHoverInfo);
-      layer.on('mousemove',e=>updateHoverInfo(e.originalEvent));
-    }
-  }).addTo(map);
-}
-addRegion(scotlandGeo,"Scotland");
-addRegion(walesGeo,"Wales");
-</script>
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains:'abcd',maxZoom:19
+    }).addTo(map);
+
+    let countryMarkers = {};
+
+    fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
+      .then(res=>res.json())
+      .then(data=>{
+        L.geoJSON(data,{
+          style: feature=>{
+            const name=normalizeName(feature.properties.name);
+            if(!(name in capitals)) return {fillOpacity:0};
+            return {color:"#8B7355",weight:1.5,fillColor:getNextColor(),fillOpacity:0.4};
+          },
+          onEachFeature:(feature,layer)=>{
+            const country=normalizeName(feature.properties.name);
+            if(!(country in capitals)) return;
+            const displayName=customNames[country]||country;
+            const capitalCoords=capitals[country];
+            const marker=L.marker(capitalCoords,{
+              icon:L.divIcon({className:"country-label",html:displayName,iconSize:[null,24],iconAnchor:[null,12]})
+            }).addTo(map);
+            countryMarkers[country]=marker;
+
+            layer.on('mouseover',e=>{ showHoverInfo(e.originalEvent,country,displayName); layer.setStyle({weight:2.5,fillOpacity:0.6,color:"#654321"}); });
+            layer.on('mouseout',e=>{ hideHoverInfo(); layer.setStyle({weight:1.5,fillOpacity:0.4,color:"#8B7355"}); });
+            layer.on('mousemove',e=>updateHoverInfo(e.originalEvent));
+
+            marker.on('mouseover',e=>showHoverInfo(e.originalEvent,country,displayName));
+            marker.on('mouseout',hideHoverInfo);
+            marker.on('mousemove',e=>updateHoverInfo(e.originalEvent));
+          }
+        }).addTo(map);
+
+        // Add Scotland & Wales separately
+        const ukSubRegions = {"Scotland":[55.9533,-3.1883],"Wales":[51.4816,-3.1791]};
+        for(const [name,coords] of Object.entries(ukSubRegions)){
+          const marker=L.marker(coords,{
+            icon:L.divIcon({className:"country-label",html:customNames[name],iconSize:[null,24],iconAnchor:[null,12]})
+          }).addTo(map);
+          countryMarkers[name]=marker;
+          marker.on('mouseover',e=>showHoverInfo(e.originalEvent,name,name));
+          marker.on('mouseout',hideHoverInfo);
+          marker.on('mousemove',e=>updateHoverInfo(e.originalEvent));
+        }
+      });
+
+    map.on('mouseout',hideHoverInfo);
+  </script>
 </body>
 </html>
