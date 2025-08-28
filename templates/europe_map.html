@@ -235,19 +235,21 @@
       "Luxembourg": [49.6116, 6.1319], "Malta": [35.8989, 14.5146], "Moldova": [47.0105, 28.8638],
       "Monaco": [43.7384, 7.4246], "Montenegro": [42.4304, 19.2594], "Netherlands": [52.3676, 4.9041],
       "North Macedonia": [41.9981, 21.4254], "Norway": [59.9139, 10.7522], "Poland": [52.2297, 21.0122],
-      "Portugal": [38.7169, -9.139], "Romania": [44.4268, 26.1025], "Russia": [55.7558, 37.6173], "San Marino": [43.9356, 12.4473],
+      "Portugal": [38.7169, -9.139], "Romania": [44.4268, 26.1025], "Russia": [55.7558, 37.6173],
+      "San Marino": [43.9356, 12.4473], "Scotland": [55.9533, -3.1883]
       "Serbia": [44.8176, 20.4569], "Slovakia": [48.1486, 17.1077], "Slovenia": [46.0569, 14.5058],
       "Spain": [40.4168, -3.7038], "Sweden": [59.3293, 18.0686], "Switzerland": [46.9481, 7.4474],
       "Turkey": [39.9208, 32.8541], "Ukraine": [50.45, 30.5236], "United Kingdom": [51.5074, -0.1278],
-      "Vatican": [41.9022, 12.4539],
-      
+      "Vatican": [41.9022, 12.4539], "Wales": [51.4816, -3.1791],
+
       // Middle East
       "Israel": [31.7683, 35.2137], "Palestine": [31.9073, 35.2034], "Lebanon": [33.8869, 35.5131],
       "Syria": [33.5138, 36.2765], "Jordan": [31.9454, 35.9284], "Iraq": [33.3152, 44.3661],
       "Iran": [35.6892, 51.3890], "Kuwait": [29.3117, 47.4818], "Saudi Arabia": [24.7136, 46.6753],
       "Bahrain": [26.0667, 50.5577], "Qatar": [25.2854, 51.5310], "United Arab Emirates": [24.2992, 54.6970],
       "Oman": [23.5859, 58.4059], "Yemen": [15.3694, 44.1910], "Afghanistan": [34.5553, 69.2075],
-      "Pakistan": [33.7294, 73.0931], "Kazakhstan": [51.1694, 71.4491]
+      "Pakistan": [33.7294, 73.0931], "Kazakhstan": [51.1694, 71.4491], "Georgia": [42.3154, 43.3569], "Armenia": [40.1792, 44.4991],
+      "Azerbaijan": [40.4093, 49.8671], "Turkmenistan": [38.9697, 59.5563], "Uzbekistan": [41.3775, 64.5853],
     };
 
     const customNames = {
@@ -259,15 +261,15 @@
       "Kosovo": "syri", "Latvia": "acs", "Liechtenstein": "Auge", "Lithuania": "akis", "Luxembourg": "Aen",
       "Malta": "għajn", "Moldova": "ochi", "Monaco": "œil", "Montenegro": "oko", "Netherlands": "oog",
       "North Macedonia": "око", "Norway": "øye", "Poland": "oko", "Portugal": "olho", "Romania": "ochi",
-      "San Marino": "occhio", "Serbia": "око", "Slovakia": "oko", "Slovenia": "oko", "Spain": "ojo",
+      "San Marino": "occhio", "Scotland": "sùil", "Serbia": "око", "Slovakia": "око", "Slovenia": "око", "Spain": "ojo",
       "Sweden": "öga", "Switzerland": "Auge", "Turkey": "göz", "Ukraine": "око", "United Kingdom": "eye",
-      "Vatican": "occhio", "Russia": "глаз", "Georgia": "თვალი", "Armenia": "աչք", "Azerbaijan": "göz",
-      
+      "Vatican": "occhio", "Russia": "глаз", "Wales": "llygad"
       // Middle East
       "Israel": "עין", "Palestine": "عين", "Lebanon": "عين", "Syria": "عين", "Jordan": "عين",
       "Iraq": "عين", "Iran": "چشم", "Kuwait": "عين", "Saudi Arabia": "عين", "Bahrain": "عين",
       "Qatar": "عين", "United Arab Emirates": "عين", "Oman": "عين", "Yemen": "عين",
-      "Afghanistan": "سترګه", "Pakistan": "آنکھ", "Kazakhstan": "көз"
+      "Afghanistan": "سترګه", "Pakistan": "آنکھ", "Kazakhstan": "көз", "Georgia": "თვალი", "Armenia": "աչք",
+      "Azerbaijan": "göz", "Turkmenistan": "göz", "Uzbekistan": "көз"
     };
 
     const pronunciations = {
@@ -279,16 +281,16 @@
       "Italy": "OH-kee-oh", "Kosovo": "SY-ree", "Latvia": "ahts", "Liechtenstein": "OW-geh", "Lithuania": "AH-kis",
       "Luxembourg": "ah-en", "Malta": "ah-yn", "Moldova": "OH-kee", "Monaco": "uh-y", "Montenegro": "OH-ko",
       "Netherlands": "ohg", "North Macedonia": "OH-ko", "Norway": "UR-yeh", "Poland": "OH-ko", "Portugal": "OH-lyo",
-      "Romania": "OH-kee", "San Marino": "OH-kee-oh", "Serbia": "OH-ko", "Slovakia": "OH-ko", "Slovenia": "OH-ko",
+      "Romania": "OH-kee", "San Marino": "OH-kee-oh", "Scotland": "sool", "Serbia": "OH-ko", "Slovakia": "OH-ko", "Slovenia": "OH-ko",
       "Spain": "OH-ho", "Sweden": "UR-ga", "Switzerland": "OW-geh", "Turkey": "gurz", "Ukraine": "OH-ko",
-      "United Kingdom": "ahy", "Vatican": "OH-kee-oh", "Russia": "glahs", "Georgia": "tva-LEE", 
-      "Armenia": "achk", "Azerbaijan": "gurz",
+      "United Kingdom": "ahy", "Vatican": "OH-kee-oh", "Russia": "glahs", "Wales": "LLUH-gad",
       
       // Middle East
       "Israel": "AH-yin", "Palestine": "AYN", "Lebanon": "AYN", "Syria": "AYN", "Jordan": "AYN",
       "Iraq": "AYN", "Iran": "cheshm", "Kuwait": "AYN", "Saudi Arabia": "AYN", "Bahrain": "AYN",
       "Qatar": "AYN", "United Arab Emirates": "AYN", "Oman": "AYN", "Yemen": "AYN",
-      "Afghanistan": "star-GAH", "Pakistan": "AANKH", "Kazakhstan": "K-urz"
+      "Afghanistan": "star-GAH", "Pakistan": "AANKH", "Kazakhstan": "kohz", "Georgia": "tva-LEE", 
+      "Armenia": "achk", "Azerbaijan": "g-urz", "Turkmenistan": "g-urz", "Uzbekistan": "kohz"
     };
 
     const countryColors = [
