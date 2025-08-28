@@ -13,10 +13,30 @@
       color: black;
       text-shadow: 1px 1px 2px white;
     }
+    .hover-info {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 1000;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .hover-info h4 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+    }
+    .hover-info p {
+      margin: 2px 0;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
+  <div id="hover-info" class="hover-info" style="display: none;"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     // ===== Constants =====
@@ -94,6 +114,34 @@
     function getStoredNames() { return JSON.parse(localStorage.getItem('renamedCountries') || '{}'); }
     function saveStoredNames(names) { localStorage.setItem('renamedCountries', JSON.stringify(names)); }
 
+    // ===== Hover Info Functions =====
+    const hoverInfo = document.getElementById('hover-info');
+
+    function showHoverInfo(e, country, displayName) {
+      const pron = pronunciations[country] || "";
+      const word = customNames[country] || "";
+      
+      hoverInfo.innerHTML = `
+        <h4>${country}</h4>
+        <p><strong>Word:</strong> ${word}</p>
+        <p><strong>Pronunciation:</strong> <i>${pron}</i></p>
+        ${displayName !== word ? `<p><strong>Custom Name:</strong> ${displayName}</p>` : ''}
+      `;
+      
+      hoverInfo.style.display = 'block';
+      hoverInfo.style.left = (e.pageX + 10) + 'px';
+      hoverInfo.style.top = (e.pageY + 10) + 'px';
+    }
+
+    function hideHoverInfo() {
+      hoverInfo.style.display = 'none';
+    }
+
+    function updateHoverInfo(e) {
+      hoverInfo.style.left = (e.pageX + 10) + 'px';
+      hoverInfo.style.top = (e.pageY + 10) + 'px';
+    }
+
     // ===== Map Setup =====
     const map = L.map('map').setView([54, 15], 4);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -134,7 +182,28 @@
 
             countryMarkers[country] = marker;
 
-            // Popup with rename + pronunciation
+            // Hover events for the country polygon
+            layer.on('mouseover', function(e) {
+              showHoverInfo(e.originalEvent, country, displayName);
+              this.setStyle({
+                weight: 3,
+                fillOpacity: 0.8
+              });
+            });
+
+            layer.on('mouseout', function(e) {
+              hideHoverInfo();
+              this.setStyle({
+                weight: 1,
+                fillOpacity: 0.6
+              });
+            });
+
+            layer.on('mousemove', function(e) {
+              updateHoverInfo(e.originalEvent);
+            });
+
+            // Click popup for renaming (keeping original functionality)
             const pron = pronunciations[country] || "";
             layer.bindPopup(`
               <b>${displayName}</b><br>
@@ -142,6 +211,19 @@
               <input type="text" id="newName-${country}" placeholder="Rename...">
               <button onclick="rename('${country}')">Save</button>
             `);
+
+            // Hover events for the marker as well
+            marker.on('mouseover', function(e) {
+              showHoverInfo(e.originalEvent, country, displayName);
+            });
+
+            marker.on('mouseout', function(e) {
+              hideHoverInfo();
+            });
+
+            marker.on('mousemove', function(e) {
+              updateHoverInfo(e.originalEvent);
+            });
           }
         }).addTo(map);
       });
@@ -167,6 +249,9 @@
         }));
       }
     }
+
+    // Hide hover info when mouse leaves the map
+    map.on('mouseout', hideHoverInfo);
   </script>
 </body>
 </html>
