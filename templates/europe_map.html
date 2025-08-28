@@ -220,7 +220,6 @@
   <div id="hover-info" class="hover-info" style="display: none;"></div>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // ===== Constants =====
     const capitals = {
       // Europe
       "Albania": [41.3275, 19.8189], "Andorra": [42.5078, 1.5211], "Austria": [48.2082, 16.5738],
@@ -291,7 +290,6 @@
       "Afghanistan": "star-GAH", "Pakistan": "AANKH"
     };
 
-    // More realistic, muted country colors
     const countryColors = [
       '#8fbc8f', '#4daaf1ff', '#d2b48c', '#3befefff', '#9830edff', 
       '#c85c5cff', '#dda0dd', '#98fb98', '#f5deb3', '#d918afff',
@@ -331,11 +329,9 @@
       return nameMap[name] || name;
     }
 
-    // ===== Local Storage Helpers =====
     function getStoredNames() { return {}; }
     function saveStoredNames(names) { }
 
-    // ===== Hover Info Functions =====
     const hoverInfo = document.getElementById('hover-info');
 
     function showHoverInfo(e, country, displayName) {
@@ -374,13 +370,12 @@
       hoverInfo.style.top = Math.max(e.pageY - 10, 10) + 'px';
     }
 
-    // ===== Map Setup =====
     const map = L.map('map', {
       zoomControl: true,
       attributionControl: true,
       maxBounds: [
-        [25, -30],  // Southwest corner
-        [75, 80]    // Northeast corner
+        [25, -30],
+        [75, 80]
       ],
       maxBoundsViscosity: 1.0
     }).setView([50, 20], 4);
@@ -416,7 +411,6 @@
             const displayName = storedNames[country] || customNames[country] || country;
             const capitalCoords = capitals[country];
 
-            // Marker at capital
             const marker = L.marker(capitalCoords, {
               icon: L.divIcon({
                 className: "country-label",
@@ -428,13 +422,12 @@
 
             countryMarkers[country] = marker;
 
-            // Hover events for the country polygon
             layer.on('mouseover', function(e) {
               showHoverInfo(e.originalEvent, country, displayName);
               this.setStyle({
                 weight: 2.5,
                 fillOpacity: 0.6,
-                color: "#654321"
+                color: "#000000ff"
               });
             });
 
@@ -443,7 +436,7 @@
               this.setStyle({
                 weight: 1.5,
                 fillOpacity: 0.4,
-                color: "#8B7355"
+                color: "#000000ff"
               });
             });
 
@@ -451,7 +444,6 @@
               updateHoverInfo(e.originalEvent);
             });
 
-            // Hover events for the marker
             marker.on('mouseover', function(e) {
               showHoverInfo(e.originalEvent, country, displayName);
             });
@@ -467,7 +459,6 @@
         }).addTo(map);
       });
 
-    // Hide hover info when mouse leaves the map
     map.on('mouseout', hideHoverInfo);
   </script>
 </body>
