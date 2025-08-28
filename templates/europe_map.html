@@ -293,9 +293,9 @@
 
     // More realistic, muted country colors
     const countryColors = [
-      '#8fbc8f', '#deb887', '#d2b48c', '#bc8f8f', '#f0e68c', 
-      '#e0e0e0', '#dda0dd', '#98fb98', '#f5deb3', '#c0c0c0',
-      '#ffefd5', '#ffe4e1', '#f0fff0', '#fdf5e6', '#fff8dc'
+      '#8fbc8f', '#4daaf1ff', '#d2b48c', '#3befefff', '#9830edff', 
+      '#c85c5cff', '#dda0dd', '#98fb98', '#f5deb3', '#c0c0c0',
+      '#f7b345ff', '#69403bff', '#44be44ff', '#e79c11ff', '#c6a831ff'
     ];
     let colorIndex = 0;
     function getNextColor() { return countryColors[colorIndex++ % countryColors.length]; }
@@ -332,8 +332,8 @@
     }
 
     // ===== Local Storage Helpers =====
-    function getStoredNames() { return {}; } // Disabled localStorage for this version
-    function saveStoredNames(names) { } // Disabled localStorage for this version
+    function getStoredNames() { return {}; }
+    function saveStoredNames(names) { }
 
     // ===== Hover Info Functions =====
     const hoverInfo = document.getElementById('hover-info');
