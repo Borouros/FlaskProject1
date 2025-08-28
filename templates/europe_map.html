@@ -229,7 +229,7 @@ fetch(CONFIG.geojsonUrl)
       onEachFeature: (feature, layer) => {
         const normalizedName = normalizeName(feature.properties.name);
         const displayName = customNames[normalizedName] || normalizedName;
-        const coords = capitals[normalizedName] || layer.getBounds();
+        const coords = capitals[normalizedName] || layer.getBounds().getCenter();
         
         console.log(`Processing: ${feature.properties.name} -> ${normalizedName} -> ${displayName}`);
         
