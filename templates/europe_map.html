@@ -214,7 +214,7 @@
 <body>
   <div class="map-header">
     <h1>European Languages</h1>
-    <p>Hover to explore • Click to rename</p>
+    <p>Hover to explore the word for "eye"</p>
   </div>
   <div id="map"></div>
   <div id="hover-info" class="hover-info" style="display: none;"></div>
@@ -222,6 +222,7 @@
   <script>
     // ===== Constants =====
     const capitals = {
+      // Europe
       "Albania": [41.3275, 19.8189], "Andorra": [42.5078, 1.5211], "Austria": [48.2082, 16.5738],
       "Belarus": [53.9, 27.5667], "Belgium": [50.8503, 4.3517], "Bosnia and Herzegovina": [43.8563, 18.4131],
       "Bulgaria": [42.6977, 23.3219], "Croatia": [45.8150, 15.9819], "Cyprus": [35.1856, 33.3823],
@@ -237,10 +238,20 @@
       "Serbia": [44.8176, 20.4569], "Slovakia": [48.1486, 17.1077], "Slovenia": [46.0569, 14.5058],
       "Spain": [40.4168, -3.7038], "Sweden": [59.3293, 18.0686], "Switzerland": [46.9481, 7.4474],
       "Turkey": [39.9208, 32.8541], "Ukraine": [50.45, 30.5236], "United Kingdom": [51.5074, -0.1278],
-      "Vatican": [41.9022, 12.4539]
+      "Vatican": [41.9022, 12.4539], "Russia": [55.7558, 37.6176], "Georgia": [41.6941, 44.8337],
+      "Armenia": [40.1772, 44.5136], "Azerbaijan": [40.3777, 49.8920],
+      
+      // Middle East
+      "Israel": [31.7683, 35.2137], "Palestine": [31.9073, 35.2034], "Lebanon": [33.8869, 35.5131],
+      "Syria": [33.5138, 36.2765], "Jordan": [31.9454, 35.9284], "Iraq": [33.3152, 44.3661],
+      "Iran": [35.6892, 51.3890], "Kuwait": [29.3117, 47.4818], "Saudi Arabia": [24.7136, 46.6753],
+      "Bahrain": [26.0667, 50.5577], "Qatar": [25.2854, 51.5310], "United Arab Emirates": [24.2992, 54.6970],
+      "Oman": [23.5859, 58.4059], "Yemen": [15.3694, 44.1910], "Afghanistan": [34.5553, 69.2075],
+      "Pakistan": [33.7294, 73.0931]
     };
 
     const customNames = {
+      // Europe
       "Albania": "syri", "Andorra": "ull", "Austria": "Auge", "Belarus": "вока", "Belgium": "œil",
       "Bosnia and Herzegovina": "oko", "Bulgaria": "око", "Croatia": "oko", "Cyprus": "μάτι", "Czechia": "oko",
       "Denmark": "øje", "Estonia": "silm", "Finland": "silmä", "France": "œil", "Germany": "Auge",
@@ -248,12 +259,19 @@
       "Kosovo": "syri", "Latvia": "acs", "Liechtenstein": "Auge", "Lithuania": "akis", "Luxembourg": "Aen",
       "Malta": "għajn", "Moldova": "ochi", "Monaco": "œil", "Montenegro": "oko", "Netherlands": "oog",
       "North Macedonia": "око", "Norway": "øye", "Poland": "oko", "Portugal": "olho", "Romania": "ochi",
-      "San Marino": "occhio", "Serbia": "око", "Slovakia": "око", "Slovenia": "око", "Spain": "ojo",
+      "San Marino": "occhio", "Serbia": "око", "Slovakia": "oko", "Slovenia": "oko", "Spain": "ojo",
       "Sweden": "öga", "Switzerland": "Auge", "Turkey": "göz", "Ukraine": "око", "United Kingdom": "eye",
-      "Vatican": "occhio"
+      "Vatican": "occhio", "Russia": "глаз", "Georgia": "თვალი", "Armenia": "աչք", "Azerbaijan": "göz",
+      
+      // Middle East
+      "Israel": "עין", "Palestine": "عين", "Lebanon": "عين", "Syria": "عين", "Jordan": "عين",
+      "Iraq": "عين", "Iran": "چشم", "Kuwait": "عين", "Saudi Arabia": "عين", "Bahrain": "عين",
+      "Qatar": "عين", "United Arab Emirates": "عين", "Oman": "عين", "Yemen": "عين",
+      "Afghanistan": "سترګه", "Pakistan": "آنکھ"
     };
 
     const pronunciations = {
+      // Europe
       "Albania": "SY-ree", "Andorra": "ool", "Austria": "OW-geh", "Belarus": "VOH-ka", "Belgium": "uh-y",
       "Bosnia and Herzegovina": "OH-ko", "Bulgaria": "OH-ko", "Croatia": "OH-ko", "Cyprus": "MAH-tee",
       "Czechia": "OH-ko", "Denmark": "UR-yeh", "Estonia": "silm", "Finland": "SIL-mah", "France": "uh-y",
@@ -263,19 +281,28 @@
       "Netherlands": "ohg", "North Macedonia": "OH-ko", "Norway": "UR-yeh", "Poland": "OH-ko", "Portugal": "OH-lyo",
       "Romania": "OH-kee", "San Marino": "OH-kee-oh", "Serbia": "OH-ko", "Slovakia": "OH-ko", "Slovenia": "OH-ko",
       "Spain": "OH-ho", "Sweden": "UR-ga", "Switzerland": "OW-geh", "Turkey": "gurz", "Ukraine": "OH-ko",
-      "United Kingdom": "ahy", "Vatican": "OH-kee-oh"
+      "United Kingdom": "ahy", "Vatican": "OH-kee-oh", "Russia": "glahs", "Georgia": "tva-LEE", 
+      "Armenia": "achk", "Azerbaijan": "gurz",
+      
+      // Middle East
+      "Israel": "AH-yin", "Palestine": "AYN", "Lebanon": "AYN", "Syria": "AYN", "Jordan": "AYN",
+      "Iraq": "AYN", "Iran": "cheshm", "Kuwait": "AYN", "Saudi Arabia": "AYN", "Bahrain": "AYN",
+      "Qatar": "AYN", "United Arab Emirates": "AYN", "Oman": "AYN", "Yemen": "AYN",
+      "Afghanistan": "star-GAH", "Pakistan": "AANKH"
     };
 
-    // More sophisticated color palette
+    // More realistic, muted country colors
     const countryColors = [
-      '#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', 
-      '#ef4444', '#ec4899', '#84cc16', '#f97316', '#3b82f6'
+      '#8fbc8f', '#deb887', '#d2b48c', '#bc8f8f', '#f0e68c', 
+      '#e0e0e0', '#dda0dd', '#98fb98', '#f5deb3', '#c0c0c0',
+      '#ffefd5', '#ffe4e1', '#f0fff0', '#fdf5e6', '#fff8dc'
     ];
     let colorIndex = 0;
     function getNextColor() { return countryColors[colorIndex++ % countryColors.length]; }
 
     function normalizeName(name) {
       const nameMap = {
+        // Europe
         "Republic of Albania": "Albania", "Principality of Andorra": "Andorra", "Republic of Austria": "Austria",
         "Republic of Belarus": "Belarus", "Kingdom of Belgium": "Belgium", "Republic of Bulgaria": "Bulgaria",
         "Republic of Croatia": "Croatia", "Republic of Cyprus": "Cyprus", "Czech Republic": "Czechia",
@@ -288,9 +315,18 @@
         "Kingdom of Norway": "Norway", "Republic of Poland": "Poland", "Portuguese Republic": "Portugal",
         "Republic of San Marino": "San Marino", "Republic of Serbia": "Serbia", "Slovak Republic": "Slovakia",
         "Republic of Slovenia": "Slovenia", "Kingdom of Spain": "Spain", "Kingdom of Sweden": "Sweden",
-        "Swiss Confederation": "Switzerland", "Republic of Türkiye": "Turkey",
+        "Swiss Confederation": "Switzerland", "Republic of Türkiye": "Turkey", "Republic of Turkey": "Turkey",
         "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
-        "Vatican City State": "Vatican"
+        "Vatican City State": "Vatican", "Russian Federation": "Russia", "Republic of Georgia": "Georgia",
+        "Republic of Armenia": "Armenia", "Republic of Azerbaijan": "Azerbaijan",
+        
+        // Middle East
+        "State of Israel": "Israel", "State of Palestine": "Palestine", "Lebanese Republic": "Lebanon",
+        "Syrian Arab Republic": "Syria", "Hashemite Kingdom of Jordan": "Jordan", "Republic of Iraq": "Iraq",
+        "Islamic Republic of Iran": "Iran", "State of Kuwait": "Kuwait", "Kingdom of Saudi Arabia": "Saudi Arabia",
+        "Kingdom of Bahrain": "Bahrain", "State of Qatar": "Qatar", "Sultanate of Oman": "Oman",
+        "Republic of Yemen": "Yemen", "Islamic Republic of Afghanistan": "Afghanistan",
+        "Islamic Republic of Pakistan": "Pakistan"
       };
       return nameMap[name] || name;
     }
@@ -341,8 +377,13 @@
     // ===== Map Setup =====
     const map = L.map('map', {
       zoomControl: true,
-      attributionControl: true
-    }).setView([54, 15], 4);
+      attributionControl: true,
+      maxBounds: [
+        [25, -30],  // Southwest corner
+        [75, 80]    // Northeast corner
+      ],
+      maxBoundsViscosity: 1.0
+    }).setView([50, 20], 4);
     
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -362,10 +403,10 @@
             const name = normalizeName(feature.properties.name);
             if (!(name in capitals)) return { fillOpacity: 0 };
             return {
-              color: "rgba(255, 255, 255, 0.8)",
-              weight: 2,
+              color: "#8B7355",
+              weight: 1.5,
               fillColor: getNextColor(),
-              fillOpacity: 0.7
+              fillOpacity: 0.4
             };
           },
           onEachFeature: (feature, layer) => {
@@ -391,33 +432,24 @@
             layer.on('mouseover', function(e) {
               showHoverInfo(e.originalEvent, country, displayName);
               this.setStyle({
-                weight: 3,
-                fillOpacity: 0.85,
-                color: "rgba(255, 255, 255, 1)"
+                weight: 2.5,
+                fillOpacity: 0.6,
+                color: "#654321"
               });
             });
 
             layer.on('mouseout', function(e) {
               hideHoverInfo();
               this.setStyle({
-                weight: 2,
-                fillOpacity: 0.7,
-                color: "rgba(255, 255, 255, 0.8)"
+                weight: 1.5,
+                fillOpacity: 0.4,
+                color: "#8B7355"
               });
             });
 
             layer.on('mousemove', function(e) {
               updateHoverInfo(e.originalEvent);
             });
-
-            // Click popup for renaming
-            const pron = pronunciations[country] || "";
-            layer.bindPopup(`
-              <h4>${displayName}</h4>
-              <p><strong>Pronunciation:</strong> <i>${pron}</i></p>
-              <input type="text" id="newName-${country}" placeholder="Enter custom name...">
-              <button onclick="rename('${country}')">Update Name</button>
-            `);
 
             // Hover events for the marker
             marker.on('mouseover', function(e) {
@@ -434,25 +466,6 @@
           }
         }).addTo(map);
       });
-
-    // ===== Rename Function =====
-    function rename(country) {
-      const input = document.getElementById(`newName-${country}`);
-      if (!input) return;
-      const newName = input.value.trim();
-      if (!newName) return;
-
-      const marker = countryMarkers[country];
-      if (marker) {
-        marker.setIcon(L.divIcon({
-          className: "country-label",
-          html: newName,
-          iconSize: [null, 24],
-          iconAnchor: [null, 12]
-        }));
-      }
-      map.closePopup();
-    }
 
     // Hide hover info when mouse leaves the map
     map.on('mouseout', hideHoverInfo);
