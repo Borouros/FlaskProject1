@@ -233,13 +233,19 @@ fetch(CONFIG.geojsonUrl)
         
         console.log(`Processing: ${feature.properties.name} -> ${normalizedName} -> ${displayName}`);
         
-        const marker = L.marker(coords, {
+        function addCountryLabel(country, displayName, coords) {
+          if (!coords) return;
+
+        L.marker(coords, {
           icon: L.divIcon({
             className: "country-label",
             html: displayName,
-            iconSize: [100, 20]
+            iconSize: [80, 20],
+           iconAnchor: [40, 10]
           })
-        }).addTo(map);
+          }).addTo(map);
+      }
+
 
         layer.on({
           mouseover: (e) => {
